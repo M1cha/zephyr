@@ -52,7 +52,7 @@ void posix_exit(int exit_code)
  * This is the actual main for the Linux process,
  * the Zephyr application main is renamed something else thru a define.
  */
-int main(int argc, char *argv[])
+int zephyr_main(int argc, char *argv[])
 {
 	run_native_tasks(_NATIVE_PRE_BOOT_1_LEVEL);
 

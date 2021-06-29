@@ -9,7 +9,7 @@
 #   variable is used for constructing the file names of the platform files
 #   like Linux.cmake or Windows-gcc.cmake. If your target is an embedded
 #   system without OS set CMAKE_SYSTEM_NAME to "Generic".
-set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_NAME Linux)
 
 # https://cmake.org/cmake/help/latest/variable/CMAKE_SYSTEM_PROCESSOR.html:
 #   The name of the CPU CMake is building for.

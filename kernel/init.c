@@ -94,7 +94,6 @@ extern void idle(void *unused1, void *unused2, void *unused3);
 __boot_func
 void z_bss_zero(void)
 {
-	(void)memset(__bss_start, 0, __bss_end - __bss_start);
 #if DT_NODE_HAS_STATUS(DT_CHOSEN(zephyr_ccm), okay)
 	(void)memset(&__ccm_bss_start, 0,
 		     ((uint32_t) &__ccm_bss_end - (uint32_t) &__ccm_bss_start));

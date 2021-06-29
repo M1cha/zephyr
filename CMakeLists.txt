@@ -1217,7 +1217,7 @@ set_property(TARGET
   )
 
 # FIXME: Is there any way to get rid of empty_file.c?
-add_executable(       ${ZEPHYR_PREBUILT_EXECUTABLE} misc/empty_file.c)
+add_executable(${ZEPHYR_PREBUILT_EXECUTABLE} misc/empty_file.c misc/main_pass1.c)
 toolchain_ld_link_elf(
   TARGET_ELF            ${ZEPHYR_PREBUILT_EXECUTABLE}
   OUTPUT_MAP            ${PROJECT_BINARY_DIR}/${ZEPHYR_PREBUILT_EXECUTABLE}.map
@@ -1269,7 +1269,7 @@ else()
     ${ZEPHYR_INCLUDE_DIRS}
   )
 
-  add_executable(       ${ZEPHYR_FINAL_EXECUTABLE} misc/empty_file.c ${GKSF})
+  add_library(       ${ZEPHYR_FINAL_EXECUTABLE} SHARED misc/empty_file.c ${GKSF})
   toolchain_ld_link_elf(
     TARGET_ELF            ${ZEPHYR_FINAL_EXECUTABLE}
     OUTPUT_MAP            ${PROJECT_BINARY_DIR}/${ZEPHYR_FINAL_EXECUTABLE}.map
@@ -1297,13 +1297,6 @@ set_target_properties(${logical_target_for_zephyr_elf} PROPERTIES OUTPUT_NAME ${
 
 set(post_build_commands "")
 set(post_build_byproducts "")
-
-list(APPEND
-  post_build_commands
-  COMMAND
-  ${CMAKE_COMMAND} -E rename ${logical_target_for_zephyr_elf}.map ${KERNEL_MAP_NAME}
-)
-list(APPEND post_build_byproducts ${KERNEL_MAP_NAME})
 
 if(NOT CONFIG_BUILD_NO_GAP_FILL)
   # Use ';' as separator to get proper space in resulting command.
