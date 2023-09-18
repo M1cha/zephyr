@@ -132,6 +132,10 @@
 	status = "okay";
 };
 
+&uicr {
+	gpio-as-nreset;
+};
+
 &gpiote {
 	status = "okay";
 };
