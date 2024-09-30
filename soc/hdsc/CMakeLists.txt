@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_SOC_FAMILY_HDSC_HC32 hdsc_hc32)

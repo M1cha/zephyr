@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+compatible: "hdsc,hc32-flash-controller"
+
+description: HDSC HC32 flash controller
+
+include: flash-controller.yaml

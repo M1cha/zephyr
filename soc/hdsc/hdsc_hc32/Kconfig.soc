@@ -1,0 +1,4 @@
+config SOC_FAMILY_HDSC_HC32
+	bool
+
+rsource "*/Kconfig.soc"

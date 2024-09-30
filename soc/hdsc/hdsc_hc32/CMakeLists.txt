@@ -1,0 +1,2 @@
+add_subdirectory(common)
+add_subdirectory_ifdef(CONFIG_SOC_HC32L13X hc32l13x)
