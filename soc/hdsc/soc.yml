@@ -1,0 +1,4 @@
+family:
+  - name: hdsc_hc32
+    socs:
+      - name: hc32l13x

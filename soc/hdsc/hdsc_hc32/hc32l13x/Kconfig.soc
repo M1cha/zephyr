@@ -1,0 +1,6 @@
+config SOC_HC32L13X
+	bool
+	select SOC_FAMILY_HDSC_HC32
+
+config SOC
+	default "hc32l13x" if SOC_HC32L13X
