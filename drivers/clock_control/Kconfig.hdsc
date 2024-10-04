@@ -1,0 +1,8 @@
+# HDSC Clock Controller Driver configuration options
+
+# SPDX-License-Identifier: Apache-2.0
+
+config CLOCK_CONTROL_HDSC_HC32
+	bool "HDSC HC32 Clock Controller Driver"
+	default y
+	depends on DT_HAS_HDSC_HC32_SYSCTRL_ENABLED

@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The representation of HC32's RCL clock
+
+compatible: "hdsc,hc32-rcl"
+
+include: fixed-clock.yaml
+
+properties:
+  startup-time-cycles:
+    type: int
+    enum:
+      - 4
+      - 16
+      - 64
+      - 256
+    description: Clock startup time in cycles
+    required: true

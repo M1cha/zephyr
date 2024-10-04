@@ -3,6 +3,7 @@
 if SOC_HC32L13X
 
 config SYS_CLOCK_HW_CYCLES_PER_SEC
+	# The frequency is changed at runtime, but the CPU boots with this one.
 	default $(dt_node_int_prop_int,/cpus/cpu@0,clock-frequency) if CORTEX_M_SYSTICK
 
 config NUM_IRQS

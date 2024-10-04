@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The representation of HC32's XTL clock
+
+compatible: "hdsc,hc32-xtl"
+
+include: fixed-clock.yaml
+
+properties:
+  amplitude:
+    type: int
+    enum:
+      - 0
+      - 1
+      - 2
+      - 3
+    description: Crystal oscillation amplitude
+    required: true
+
+  drive:
+    type: int
+    enum:
+      - 0
+      - 1
+      - 2
+      - 3
+    description: Crystal drive capability
+    required: true
+
+  startup-time-cycles:
+    type: int
+    enum:
+      - 256
+      - 1024
+      - 4096
+      - 16384
+    description: Clock startup time in cycles
+    required: true
