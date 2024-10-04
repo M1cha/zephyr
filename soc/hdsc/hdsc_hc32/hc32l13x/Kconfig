@@ -1,5 +1,6 @@
 config SOC_HC32L13X
 	select ARM
+	select CLOCK_CONTROL
 	select CPU_CORTEX_M0PLUS
 	select CPU_CORTEX_M_HAS_SYSTICK
 	select SOC_EARLY_INIT_HOOK

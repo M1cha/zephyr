@@ -1,0 +1,20 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#ifndef ZEPHYR_INCLUDE_DT_BINDINGS_CLOCK_HDSC_HC32_CLOCK_H_
+#define ZEPHYR_INCLUDE_DT_BINDINGS_CLOCK_HDSC_HC32_CLOCK_H_
+
+/* The first 5 have to match the value of the Clk_sw5_sel register. */
+#define HDSC_HC32_CLKID_RCH 0
+#define HDSC_HC32_CLKID_XTH 1
+#define HDSC_HC32_CLKID_RCL 2
+#define HDSC_HC32_CLKID_XTL 3
+#define HDSC_HC32_CLKID_PLL 4
+
+#define HDSC_HC32_CLKID_SYS  5
+#define HDSC_HC32_CLKID_PERI 6
+
+#define HDSC_HC32_CLKID_MODULE_BASE 10
+#define HDSC_HC32_CLKID_MODULE(x)   (HDSC_HC32_CLKID_MODULE_BASE + (x))
+
+#endif /* ZEPHYR_INCLUDE_DT_BINDINGS_CLOCK_HDSC_HC32_CLOCK_H_ */

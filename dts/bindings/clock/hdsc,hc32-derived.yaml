@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The representation of HC32's derived clocks
+
+compatible: "hdsc,hc32-derived"
+
+include:
+  - name: fixed-factor-clock.yaml
+    property-blocklist:
+      - clock-mult
