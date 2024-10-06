@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config PINCTRL_HC32
+	bool "HC32 pin controller driver"
+	default y
+	depends on DT_HAS_HDSC_HC32_PINCTRL_ENABLED
+	help
+	  HC32 pin controller driver.

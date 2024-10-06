@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+    HDSC HC32 pinctrl node
+
+compatible: "hdsc,hc32-pinctrl"
+
+include: base.yaml
+
+properties:
+  clocks:
+    required: true
+
+child-binding:
+  description: |
+    Each child node defines the configuration for a particular state.
+  child-binding:
+    description: |
+      The grandchild nodes group pins that share the same pin configuration.
+
+    include:
+      - name: pincfg-node.yaml
+        property-allowlist:
+          - bias-disable
+          - bias-pull-down
+          - bias-pull-up
+          - drive-push-pull
+          - drive-open-drain
+          - output-disable
+          - output-enable
+          - output-high
+          - output-low
+
+    properties:
+      pinmux:
+        required: true
+        type: array
+        description: |
+          An array of pins sharing the same group properties. The pins should
+          be defined using pre-defined macros or, alternatively, using the
+          HC32_PINMUX utility macro.
+
+      drive-strength:
+        type: string
+        enum:
+          - "high"
+          - "low"
+        default: "high"
+        description: |
+          The drive strength of a pin, relative to full-driver strength.
+          The default value is "high", which is the reset value.
+
+      analog-mode:
+        type: boolean
+        description: |
+          Set the pin to analog mode.
