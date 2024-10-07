@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: HC32 GPIO node
+
+compatible: "hdsc,hc32-gpio"
+
+include: [gpio-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+    description: Register offset of this gpio port.
+
+  clocks:
+    required: true
+
+  "#gpio-cells":
+    const: 2
+
+gpio-cells:
+  - pin
+  - flags
