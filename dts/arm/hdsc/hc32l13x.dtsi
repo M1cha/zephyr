@@ -97,6 +97,47 @@
 			#size-cells = <0>;
 			reg = <0x40020c00 0x400>;
 			clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(28)>;
+
+			gpioa: gpio@0 {
+				compatible = "hdsc,hc32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x00>;
+				clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(28)>;
+				interrupts = <0 3>;
+				ngpios = <16>;
+			};
+
+			gpiob: gpio@40 {
+				compatible = "hdsc,hc32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40>;
+				clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(28)>;
+				interrupts = <1 3>;
+				ngpios = <16>;
+			};
+
+			gpioc: gpio@80 {
+				compatible = "hdsc,hc32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x80>;
+				clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(28)>;
+				interrupts = <2 3>;
+				ngpios = <16>;
+			};
+
+			gpiod: gpio@c0 {
+				compatible = "hdsc,hc32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0xc0>;
+				clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(28)>;
+				interrupts = <3 3>;
+				ngpios = <16>;
+			};
+
 		};
 	};
 };
