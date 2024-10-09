@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: HC32 USART
+
+compatible: "hdsc,hc32-lpuart"
+
+include: [uart-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+
+  clocks:
+    required: true
