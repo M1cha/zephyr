@@ -139,6 +139,24 @@
 			};
 
 		};
+
+		lpuart0: lpuart@40000200 {
+			compatible = "hdsc,hc32-lpuart";
+			reg = <0x40000200 0x100>;
+			clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(2)>, <&sysctrl HDSC_HC32_CLKID_PERI>;
+			clock-names = "module", "tx";
+			interrupts = <8 3>;
+			status = "disabled";
+		};
+
+		lpuart1: lpuart@40004000 {
+			compatible = "hdsc,hc32-lpuart";
+			reg = <0x40004000 0x100>;
+			clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(3)>, <&sysctrl HDSC_HC32_CLKID_PERI>;
+			clock-names = "module", "tx";
+			interrupts = <9 3>;
+			status = "disabled";
+		};
 	};
 };
 
