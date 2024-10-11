@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config ADC_HC32
+	bool "HC32 ADC driver"
+	default y
+	depends on DT_HAS_HDSC_HC32_ADC_ENABLED
+	select ADC_CONFIGURABLE_BUFFER_AMPLIFIER
+	help
+	  Enable HDSC HC32 ADC driver
