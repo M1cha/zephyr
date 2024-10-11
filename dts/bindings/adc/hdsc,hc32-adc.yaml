@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: HDSC HC32 ADC
+
+compatible: "hdsc,hc32-adc"
+
+include: [adc-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  channels:
+    type: int
+    description: Number of external channels
+    required: true
+
+  interrupts:
+    required: true
+
+  "#io-channel-cells":
+    const: 1
+
+  clock-div:
+    type: int
+    description: PCLK clock divider
+    enum:
+      - 1
+      - 2
+      - 4
+      - 8
+
+  temp-sensor-enabled:
+    type: boolean
+    description: Enable internal temperature sensor.
+
+io-channel-cells:
+  - input

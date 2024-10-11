@@ -140,6 +140,16 @@
 
 		};
 
+		adc: adc@40002400 {
+			compatible = "hdsc,hc32-adc";
+			reg = <0x40002400 0x400>;
+			interrupts = <24 0>;
+			clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(16)>;
+			channels = <30>;
+			status = "disabled";
+			#io-channel-cells = <1>;
+		};
+
 		lpuart0: lpuart@40000200 {
 			compatible = "hdsc,hc32-lpuart";
 			reg = <0x40000200 0x100>;
