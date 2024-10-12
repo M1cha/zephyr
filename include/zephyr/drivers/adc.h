@@ -170,6 +170,10 @@ struct adc_channel_cfg {
 	 */
 	uint32_t vbias_pins;
 #endif /* CONFIG_ADC_CONFIGURABLE_VBIAS_PIN */
+
+#ifdef CONFIG_ADC_CONFIGURABLE_BUFFER_AMPLIFIER
+	uint8_t use_buffer_amplifier;
+#endif /* CONFIG_ADC_CONFIGURABLE_BUFFER_AMPLIFIER */
 };
 
 /**
@@ -253,6 +257,8 @@ IF_ENABLED(CONFIG_ADC_CONFIGURABLE_EXCITATION_CURRENT_SOURCE_PIN, \
 	 .current_source_pin = DT_PROP_OR(node_id, zephyr_current_source_pin, {0}),)) \
 IF_ENABLED(CONFIG_ADC_CONFIGURABLE_VBIAS_PIN, \
 	(.vbias_pins = DT_PROP_OR(node_id, zephyr_vbias_pins, 0),)) \
+IF_ENABLED(CONFIG_ADC_CONFIGURABLE_BUFFER_AMPLIFIER, \
+	(.use_buffer_amplifier = DT_PROP_OR(node_id, zephyr_use_buffer_amplifier, 0),)) \
 }
 
 /**
