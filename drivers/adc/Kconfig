@@ -38,6 +38,11 @@ config ADC_CONFIGURABLE_EXCITATION_CURRENT_SOURCE_PIN
 config ADC_CONFIGURABLE_VBIAS_PIN
 	bool
 
+# By selecting or not this option particular ADC drivers indicate if they
+# allow a configurable buffer amplifier.
+config ADC_CONFIGURABLE_BUFFER_AMPLIFIER
+	bool
+
 config ADC_ASYNC
 	bool "Asynchronous call support"
 	select POLL
