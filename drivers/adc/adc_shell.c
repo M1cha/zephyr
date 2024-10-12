@@ -432,7 +432,7 @@ SHELL_SUBCMD_DICT_SET_CREATE(sub_ref_cmds, cmd_adc_ref,
 	(VDD_1_2, ADC_REF_VDD_1_2, "VDD/2"),
 	(VDD_1_3, ADC_REF_VDD_1_3, "VDD/3"),
 	(VDD_1_4, ADC_REF_VDD_1_4, "VDD/4"),
-	(INTERNAL, ADC_REF_INTERNAL, "Internal"),
+	(INTERNAL_0, ADC_REF_INTERNAL_0, "Internal, input 0"),
 	(EXTERNAL_0, ADC_REF_EXTERNAL0, "External, input 0"),
 	(EXTERNAL_1, ADC_REF_EXTERNAL1, "External, input 1")
 );
