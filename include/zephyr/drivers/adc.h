@@ -79,7 +79,7 @@ enum adc_reference {
 	ADC_REF_VDD_1_2,   /**< VDD/2. */
 	ADC_REF_VDD_1_3,   /**< VDD/3. */
 	ADC_REF_VDD_1_4,   /**< VDD/4. */
-	ADC_REF_INTERNAL,  /**< Internal. */
+	ADC_REF_INTERNAL0,  /**< Internal, input 0. */
 	ADC_REF_EXTERNAL0, /**< External, input 0. */
 	ADC_REF_EXTERNAL1, /**< External, input 1. */
 };
@@ -919,7 +919,7 @@ static inline int adc_raw_to_millivolts_dt(const struct adc_dt_spec *spec,
 		return -ENOTSUP;
 	}
 
-	if (spec->channel_cfg.reference == ADC_REF_INTERNAL) {
+	if (spec->channel_cfg.reference == ADC_REF_INTERNAL0) {
 		vref_mv = (int32_t)adc_ref_internal(spec->dev);
 	} else {
 		vref_mv = spec->vref_mv;
