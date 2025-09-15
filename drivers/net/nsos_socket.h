@@ -88,6 +88,20 @@ struct nsos_mid_timeval {
 /** @} */
 
 /**
+ * @name IP level options (NSOS_MID_IPPROTO_IP)
+ * @{
+ */
+/* Socket options for NSOS_MID_IPPROTO_IP level */
+/** Set or read the time-to-live value of outgoing multicast packets
+ *  for this socket.
+ */
+#define NSOS_MID_IP_MULTICAST_TTL 33
+/** Join IP multicast group. */
+#define NSOS_MID_IP_ADD_MEMBERSHIP 35
+
+/** @} */
+
+/**
  * @name TCP level options (NSOS_MID_IPPROTO_TCP)
  * @{
  */

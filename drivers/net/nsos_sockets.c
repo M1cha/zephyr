@@ -1358,6 +1358,33 @@ static int nsos_setsockopt(void *obj, int level, int optname,
 		}
 		break;
 
+	case IPPROTO_IP:
+		switch (optname) {
+		case IP_MULTICAST_TTL:
+			return nsos_setsockopt_int(sock,
+						   NSOS_MID_IPPROTO_IP, NSOS_MID_IP_MULTICAST_TTL,
+						   optval, optlen);
+		case IP_ADD_MEMBERSHIP:
+			const struct ip_mreqn *mreqn = optval;
+			int err;
+
+			if (optlen != sizeof(struct ip_mreqn)) {
+				errno = EINVAL;
+				return -1;
+			}
+
+			err = nsos_adapt_setsockopt(sock->poll.mid.fd, NSOS_MID_IPPROTO_IP,
+						    NSOS_MID_IP_ADD_MEMBERSHIP, mreqn,
+						    sizeof(*mreqn));
+			if (err) {
+				errno = nsi_errno_from_mid(-err);
+				return -1;
+			}
+
+			return 0;
+		}
+		break;
+
 	case IPPROTO_IPV6:
 		switch (optname) {
 		case IPV6_V6ONLY:
