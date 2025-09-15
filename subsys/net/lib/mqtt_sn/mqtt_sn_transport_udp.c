@@ -210,9 +210,12 @@ static ssize_t tp_udp_recvfrom(struct mqtt_sn_client *client, void *buffer, size
 	int rc;
 	struct sockaddr *srcaddr = src_addr;
 
-	rc = zsock_recvfrom(udp->sock, buffer, length, 0, src_addr, addrlen);
+	rc = zsock_recvfrom(udp->sock, buffer, length, ZSOCK_MSG_DONTWAIT, src_addr, addrlen);
 	LOG_DBG("recv %d", rc);
 	if (rc < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+			return 0;
+		}
 		return -errno;
 	}
 
