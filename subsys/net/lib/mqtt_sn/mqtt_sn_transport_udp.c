@@ -235,10 +235,11 @@ static int tp_udp_sendto(struct mqtt_sn_transport *transport, void *buf, size_t 
 			}
 		}
 
-		rc = zsock_sendto(udp->sock, buf, sz, 0, &udp->bcaddr, udp->bcaddrlen);
+		rc = zsock_sendto(udp->sock, buf, sz, ZSOCK_MSG_DONTWAIT, &udp->bcaddr,
+				  udp->bcaddrlen);
 	} else {
 		LOG_HEXDUMP_DBG(buf, sz, "Sending Addressed UDP packet");
-		rc = zsock_sendto(udp->sock, buf, sz, 0, dest_addr, addrlen);
+		rc = zsock_sendto(udp->sock, buf, sz, ZSOCK_MSG_DONTWAIT, dest_addr, addrlen);
 	}
 
 	if (rc < 0) {
@@ -260,11 +261,16 @@ static ssize_t tp_udp_recvfrom(struct mqtt_sn_transport *transport, void *buffer
 	int errno_backup;
 	net_socklen_t addrlen_local = *addrlen;
 
-	ret = zsock_recvfrom(udp->sock, buffer, length, 0, src_addr, &addrlen_local);
+	ret = zsock_recvfrom(udp->sock, buffer, length, ZSOCK_MSG_DONTWAIT, src_addr, &addrlen_local);
 	errno_backup = errno;
 	LOG_DBG("recv %zd", ret);
 	if (ret < 0) {
 		errno = errno_backup;
+
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+			return 0;
+		}
+
 		return -1;
 	}
 	*addrlen = addrlen_local;
