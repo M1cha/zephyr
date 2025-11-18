@@ -77,21 +77,6 @@ static void codec_soft_reset(const struct device *dev)
 	codec_write_reg(dev, TAA3020_SW_RESET, val);
 }
 
-static void codec_set_sleep(const struct device *dev, bool sleep_en)
-{
-	uint8_t val;
-
-	codec_read_reg(dev, TAA3020_SLEEP_CFG, &val);
-	if (sleep_en) {
-		val &= ~TAA3020_SLEEP_CFG_SLEEP_ENZ;
-		k_msleep(10);
-	} else {
-		val |= TAA3020_SLEEP_CFG_SLEEP_ENZ;
-		k_msleep(1);
-	}
-	codec_write_reg(dev, TAA3020_SLEEP_CFG, val);
-}
-
 static void codec_set_power(const struct device *dev, bool power_en)
 {
 	uint8_t val = 0;
@@ -384,13 +369,17 @@ static int codec_initialize_internal(const struct device *dev,
 	uint8_t val;
 	uint8_t in_ch_en = 0;
 
-	codec_set_sleep(dev, false);
+	codec_read_reg(dev, TAA3020_SLEEP_CFG, &val);
+	val |= TAA3020_SLEEP_CFG_SLEEP_ENZ;
 
 	if (config->areg_internal) {
-		codec_read_reg(dev, TAA3020_SLEEP_CFG, &val);
 		val |= TAA3020_SLEEP_CFG_AREG_SELECT;
-		codec_write_reg(dev, TAA3020_SLEEP_CFG, val);
+	} else {
+		val &= TAA3020_SLEEP_CFG_AREG_SELECT;
 	}
+
+	codec_write_reg(dev, TAA3020_SLEEP_CFG, val);
+	k_msleep(1);
 
 	for (size_t i = 0; i < config->num_channels; i++) {
 		err = codec_configure_channel(dev, &config->channels[i]);
@@ -398,6 +387,7 @@ static int codec_initialize_internal(const struct device *dev,
 			LOG_ERR("Failed to configure channel #%zu: %d", i, err);
 			return -EFAULT;
 		}
+
 		in_ch_en |= TAA3020_IN_CH_EN_CHANNEL(config->channels[i].channel);
 	}
 
@@ -428,6 +418,16 @@ static int codec_initialize(const struct device *dev)
 }
 
 #ifdef CONFIG_PM_DEVICE
+static void codec_enable_sleep(const struct device *dev)
+{
+	uint8_t val;
+
+	codec_read_reg(dev, TAA3020_SLEEP_CFG, &val);
+	val &= ~TAA3020_SLEEP_CFG_SLEEP_ENZ;
+	codec_write_reg(dev, TAA3020_SLEEP_CFG, val);
+	k_msleep(10);
+}
+
 static int codec_device_pm_action(const struct device *dev, enum pm_device_action action)
 {
 	int err;
@@ -442,7 +442,7 @@ static int codec_device_pm_action(const struct device *dev, enum pm_device_actio
 		}
 		break;
 	case PM_DEVICE_ACTION_SUSPEND:
-		codec_set_sleep(dev, true);
+		codec_enable_sleep(dev);
 		break;
 	default:
 		return -ENOTSUP;
