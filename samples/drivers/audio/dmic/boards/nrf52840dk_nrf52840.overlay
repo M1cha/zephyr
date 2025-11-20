@@ -19,3 +19,34 @@ dmic_dev: &pdm0 {
 	pinctrl-names = "default";
 	clock-source = "PCLK32M_HFXO";
 };
+
+&i2c0 {
+
+	audio_codec: taa3020@4e {
+		status = "okay";
+		compatible = "ti,taa3020";
+		reg = <0x4e>;
+		areg-internal-en;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		left@0 {
+			compatible = "ti,taa3020-channel";
+			reg = <0x0>;
+			in-src = "differential";
+			in-type = "line";
+			impedance = "20k";
+			coupling = "dc";
+		};
+
+		right@1 {
+			compatible = "ti,taa3020-channel";
+			reg = <0x1>;
+			in-src = "differential";
+			in-type = "line";
+			impedance = "20k";
+			coupling = "dc";
+		};
+	};
+};
