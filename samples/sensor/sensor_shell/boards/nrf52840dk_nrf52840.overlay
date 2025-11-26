@@ -1,0 +1,12 @@
+&arduino_i2c {
+	status = "okay";
+
+	sen6x: sen6x@6b {
+		compatible = "sensirion,sen6x";
+		model = "SEN66";
+		reg = <0x6b>;
+		status = "okay";
+		auto-clear-device-status;
+		//start-measurement-on-init;
+	};
+};

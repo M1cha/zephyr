@@ -359,6 +359,8 @@ void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len
 		return;
 	}
 
+	LOG_HEXDUMP_DBG(buf, buf_len, "sensor buffer");
+
 	rc = sensor_get_decoder(ctx->dev, &decoder);
 	if (rc != 0) {
 		shell_error(ctx->sh, "Failed to get decoder for '%s'", ctx->dev->name);
