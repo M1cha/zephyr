@@ -8,4 +8,5 @@ add_subdirectory_ifdef(CONFIG_SHT3XD sht3xd)
 add_subdirectory_ifdef(CONFIG_SHT4X sht4x)
 add_subdirectory_ifdef(CONFIG_SHTCX shtcx)
 add_subdirectory_ifdef(CONFIG_STS4X sts4x)
+add_subdirectory_ifdef(CONFIG_SEN6X sen6x)
 # zephyr-keep-sorted-stop
