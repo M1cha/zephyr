@@ -98,6 +98,8 @@ enum sensor_channel {
 	 * object is close.
 	 */
 	SENSOR_CHAN_PROX,
+	/** Ambient humidity, in percent. */
+	SENSOR_CHAN_AMBIENT_HUMIDITY,
 	/** Humidity, in percent. */
 	SENSOR_CHAN_HUMIDITY,
 	/** Ambient illuminance in visible spectrum, in lux. */
@@ -125,6 +127,8 @@ enum sensor_channel {
 	SENSOR_CHAN_PM_1_0,
 	/** 2.5 micro-meters Particulate Matter, in ug/m^3 */
 	SENSOR_CHAN_PM_2_5,
+	/** 4.0 micro-meters Particulate Matter, in ug/m^3 */
+	SENSOR_CHAN_PM_4_0,
 	/** 10 micro-meters Particulate Matter, in ug/m^3 */
 	SENSOR_CHAN_PM_10,
 	/** Number of particles ≥ 0.3 µm per 0.1 liter of air */
@@ -135,6 +139,8 @@ enum sensor_channel {
 	SENSOR_CHAN_PM_1_0_COUNT,
 	/** Number of particles ≥ 2.5 µm per 0.1 liter of air */
 	SENSOR_CHAN_PM_2_5_COUNT,
+	/** Number of particles ≥ 4.0 µm per 0.1 liter of air */
+	SENSOR_CHAN_PM_4_0_COUNT,
 	/** Number of particles ≥ 5.0 µm per 0.1 liter of air */
 	SENSOR_CHAN_PM_5_COUNT,
 	/** Number of particles ≥ 10.0 µm per 0.1 liter of air */
@@ -145,10 +151,16 @@ enum sensor_channel {
 
 	/** CO2 level, in parts per million (ppm) **/
 	SENSOR_CHAN_CO2,
+	/** HCHO level, in parts per million (ppm) **/
+	SENSOR_CHAN_HCHO,
+	/** NOx index **/
+	SENSOR_CHAN_NOX_INDEX,
 	/** O2 level, in parts per million (ppm) **/
 	SENSOR_CHAN_O2,
 	/** VOC level, in parts per billion (ppb) **/
 	SENSOR_CHAN_VOC,
+	/** VOC index **/
+	SENSOR_CHAN_VOC_INDEX,
 	/** Gas sensor resistance in ohms. */
 	SENSOR_CHAN_GAS_RES,
 	/** Flow rate in litres per minute */

@@ -66,6 +66,7 @@ static const char *const sensor_channel_name[SENSOR_CHAN_COMMON_COUNT] = {
 	[SENSOR_CHAN_AMBIENT_TEMP] = "ambient_temp",
 	[SENSOR_CHAN_PRESS] = "press",
 	[SENSOR_CHAN_PROX] = "prox",
+	[SENSOR_CHAN_AMBIENT_HUMIDITY] = "ambient_humidity",
 	[SENSOR_CHAN_HUMIDITY] = "humidity",
 	[SENSOR_CHAN_AMBIENT_LIGHT] = "ambient_light",
 	[SENSOR_CHAN_LIGHT] = "light",
@@ -79,17 +80,22 @@ static const char *const sensor_channel_name[SENSOR_CHAN_COMMON_COUNT] = {
 	[SENSOR_CHAN_PM_10_CF] = "pm_10_cf",
 	[SENSOR_CHAN_PM_1_0] = "pm_1_0",
 	[SENSOR_CHAN_PM_2_5] = "pm_2_5",
+	[SENSOR_CHAN_PM_4_0] = "pm_4_0",
 	[SENSOR_CHAN_PM_10] = "pm_10",
 	[SENSOR_CHAN_PM_0_3_COUNT] = "pm_0_3_count",
 	[SENSOR_CHAN_PM_0_5_COUNT] = "pm_0_5_count",
 	[SENSOR_CHAN_PM_1_0_COUNT] = "pm_1_0_count",
 	[SENSOR_CHAN_PM_2_5_COUNT] = "pm_2_5_count",
+	[SENSOR_CHAN_PM_4_COUNT] = "pm_4_0_count",
 	[SENSOR_CHAN_PM_5_COUNT] = "pm_5_0_count",
 	[SENSOR_CHAN_PM_10_COUNT] = "pm_10_count",
 	[SENSOR_CHAN_DISTANCE] = "distance",
 	[SENSOR_CHAN_CO2] = "co2",
+	[SENSOR_CHAN_HCHO] = "hcho",
+	[SENSOR_CHAN_NOX_INDEX] = "nox_index",
 	[SENSOR_CHAN_O2] = "o2",
 	[SENSOR_CHAN_VOC] = "voc",
+	[SENSOR_CHAN_VOC_INDEX] = "voc_index",
 	[SENSOR_CHAN_GAS_RES] = "gas_resistance",
 	[SENSOR_CHAN_FLOW_RATE] = "flow_rate",
 	[SENSOR_CHAN_VOLTAGE] = "voltage",
@@ -338,8 +344,7 @@ static int parse_sensor_value(const char *val_str, struct sensor_value *out)
 	return 0;
 }
 
-void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len,
-				      void *userdata)
+void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len, void *userdata)
 {
 	struct sensor_shell_processing_context *ctx = userdata;
 	const struct sensor_decoder_api *decoder;
@@ -377,8 +382,6 @@ void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len
 				    : sensor_trigger_table[trigger].name));
 	}
 
-
-
 	for (struct sensor_chan_spec ch = {0, 0}; ch.chan_type < SENSOR_CHAN_ALL; ch.chan_type++) {
 		uint32_t fit = 0;
 		size_t base_size;
@@ -388,7 +391,7 @@ void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len
 		rc = decoder->get_size_info(ch, &base_size, &frame_size);
 		if (rc != 0) {
 			LOG_DBG("skipping unsupported channel %s:%d",
-				 sensor_channel_name[ch.chan_type], ch.chan_idx);
+				sensor_channel_name[ch.chan_type], ch.chan_idx);
 			/* Channel not supported, skipping */
 			continue;
 		}
@@ -403,8 +406,8 @@ void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len
 		}
 
 		while (decoder->get_frame_count(buf, ch, &frame_count) == 0) {
-			LOG_DBG("decoding %d frames from channel %s:%d",
-				frame_count, sensor_channel_name[ch.chan_type], ch.chan_idx);
+			LOG_DBG("decoding %d frames from channel %s:%d", frame_count,
+				sensor_channel_name[ch.chan_type], ch.chan_idx);
 			fit = 0;
 			memset(&accumulator_buffer, 0, sizeof(accumulator_buffer));
 			while (decoder->decode(buf, ch, &fit, 1, decoded_buffer) > 0) {
@@ -533,10 +536,9 @@ void sensor_shell_processing_callback(int result, uint8_t *buf, uint32_t buf_len
 					   (ch.chan_type >= ARRAY_SIZE(sensor_channel_name))
 						   ? ""
 						   : sensor_channel_name[ch.chan_type],
-					   ch.chan_idx,
-					   data->shift, accumulator_buffer.count,
+					   ch.chan_idx, data->shift, accumulator_buffer.count,
 					   PRIsensor_q31_data_arg(*data, 0));
-				}
+			}
 			}
 			++ch.chan_idx;
 		}
@@ -588,8 +590,7 @@ static int cmd_get_sensor(const struct shell *sh, size_t argc, char *argv[])
 				shell_error(sh, "Failed to read channel (%s)", argv[i]);
 				continue;
 			}
-			iodev_sensor_shell_channels[count++] =
-				(struct sensor_chan_spec){chan, 0};
+			iodev_sensor_shell_channels[count++] = (struct sensor_chan_spec){chan, 0};
 		}
 	}
 
@@ -703,8 +704,7 @@ static void cmd_sensor_attr_get_handler(const struct shell *sh, const struct dev
 
 	shell_info(sh, "%s(channel=%s, attr=%s) value=%.6f value=%.6f value=%.6f", dev->name,
 		   sensor_channel_name[channel], sensor_attribute_name[attr],
-		   sensor_value_to_double(&value[0]),
-		   sensor_value_to_double(&value[1]),
+		   sensor_value_to_double(&value[0]), sensor_value_to_double(&value[1]),
 		   sensor_value_to_double(&value[2]));
 }
 
@@ -1038,10 +1038,8 @@ static void data_ready_trigger_handler(const struct device *sensor,
 			value.val1 = micro_value / 1000000;
 			value.val2 = (int32_t)llabs(micro_value - (value.val1 * 1000000));
 			LOG_INF("sensor=%.*s, chan=%s, num_samples=%u, data=%d.%06d",
-				sensor_name_len_before_at, sensor_name,
-				sensor_channel_name[i],
-				stats[i].count,
-				value.val1, value.val2);
+				sensor_name_len_before_at, sensor_name, sensor_channel_name[i],
+				stats[i].count, value.val1, value.val2);
 
 			stats[i].accumulator = 0;
 			stats[i].count = 0;
@@ -1082,7 +1080,7 @@ static int cmd_trig_sensor(const struct shell *sh, size_t argc, char **argv)
 
 		if (sensor_idx < 0) {
 			shell_error(sh, "Unable to support more simultaneous sensor trigger"
-				    " devices");
+					" devices");
 			err = -ENOTSUP;
 		} else {
 			struct sample_stats *stats = sensor_stats[sensor_idx];
