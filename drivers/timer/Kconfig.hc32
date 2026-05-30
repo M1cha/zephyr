@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config HC32_LPTIM_TIMER
+	bool "HC32 LPTIM system timer driver"
+	default y
+	depends on DT_HAS_HDSC_HC32_LPTIM_ENABLED
+	select TICKLESS_CAPABLE
+	select SYSTEM_TIMER_HAS_DISABLE_SUPPORT
+	help
+	  This module implements a kernel device driver for using the LPTIM
+	  peripheral as the system clock. It provides the standard "system clock
+	  driver" interfaces.

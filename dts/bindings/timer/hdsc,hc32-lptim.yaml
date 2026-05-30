@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: HDSC HC32 Low Power Timer
+
+compatible: "hdsc,hc32-lptim"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+
+  clocks:
+    required: true
+

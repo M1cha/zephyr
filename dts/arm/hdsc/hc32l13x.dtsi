@@ -168,9 +168,22 @@
 			interrupts = <9 3>;
 			status = "disabled";
 		};
+
+		lptim: lptim@40000f00 {
+			compatible = "hdsc,hc32-lptim";
+			reg = <0x40000f00 0x80>;
+			interrupts = <17 3>;
+			clocks = <&sysctrl HDSC_HC32_CLKID_MODULE(9)>, <&sysctrl HDSC_HC32_CLKID_XTL>;
+			clock-names = "module", "src";
+		};
+
 	};
 };
 
 &nvic {
 	arm,num-irq-priority-bits = <2>;
+};
+
+&systick {
+	status = "disabled";
 };

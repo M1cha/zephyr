@@ -2,9 +2,19 @@
 
 if SOC_HC32L13X
 
+DT_HC32L13X_LPTIM_PATH := $(dt_nodelabel_path,lptim)
+DT_HC32L13X_XTL_PATH := $(dt_nodelabel_path,clk_xtl)
+
+# NOTE: Since the other clock sources are very configurable and might even have
+#       calibration values applied, we can't provide reasonable defaults for them.
 config SYS_CLOCK_HW_CYCLES_PER_SEC
 	# The frequency is changed at runtime, but the CPU boots with this one.
 	default $(dt_node_int_prop_int,/cpus/cpu@0,clock-frequency) if CORTEX_M_SYSTICK
+	# XTL
+	default $(dt_node_int_prop_int,$(DT_HC32L13X_XTL_PATH),clock-frequency) if $(dt_path_enabled,$(DT_HC32L13X_LPTIM_PATH)) && "$(dt_node_ph_array_prop_int,$(DT_HC32L13X_LPTIM_PATH),clocks,1,clk-id)" = 3
+
+config SYS_CLOCK_TICKS_PER_SEC
+	default $(dt_node_int_prop_int,$(DT_HC32L13X_XTL_PATH),clock-frequency) if $(dt_path_enabled,$(DT_HC32L13X_LPTIM_PATH)) && "$(dt_node_ph_array_prop_int,$(DT_HC32L13X_LPTIM_PATH),clocks,1,clk-id)" = 3
 
 config NUM_IRQS
 	int

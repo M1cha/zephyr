@@ -33,6 +33,8 @@ struct timer_data {
  * derive from sources that have slews that sum to +/- 13%.
  */
 #define BUSY_TICK_SLEW_PPM 130000U
+#elif CONFIG_HC32_LPTIM_TIMER
+#define BUSY_TICK_SLEW_PPM 10000U
 #else
 /* On other platforms assume the clocks are perfectly aligned. */
 #define BUSY_TICK_SLEW_PPM 0U
