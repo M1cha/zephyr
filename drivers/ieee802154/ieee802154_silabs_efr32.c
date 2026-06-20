@@ -1813,7 +1813,7 @@ static int sl_802154_rail_config(const struct device *dev)
 /*************************************************************************************************/
 /* Energy Scan */
 
-static void sl_802154_rail_timer_callback(struct sl_rail_multi_timer *tmr,
+static void sl_802154_rail_timer_callback(sl_rail_multi_timer_t *tmr,
 					  sl_rail_time_t expected_time, void *callback_arg);
 
 static uint16_t sl_802154_get_symbol_duration_us(sl_rail_handle_t handle)
@@ -1863,7 +1863,7 @@ static void sl_802154_energy_scan_finalize(sl_rail_handle_t handle)
 	}
 }
 
-static void sl_802154_rail_timer_callback(struct sl_rail_multi_timer *tmr,
+static void sl_802154_rail_timer_callback(sl_rail_multi_timer_t *tmr,
 					  sl_rail_time_t expected_time, void *callback_arg)
 {
 	ARG_UNUSED(tmr);
