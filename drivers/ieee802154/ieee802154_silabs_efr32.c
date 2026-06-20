@@ -2546,11 +2546,11 @@ static int silabs_efr32_modulated_carrier(const struct device *dev, const uint8_
 
 static const struct sl_802154_config silabs_efr32_radio_cfg = {
 	.hfxo_accuracy_ppm = COND_CODE_1(DT_INST_NODE_HAS_PROP(0, hfxo),
-					 (DT_PROP(DT_INST_PHANDLE(0, hfxo), precision)), (250)),
+					 (DT_PROP(DT_INST_PHANDLE(0, hfxo), precision)), (300)),
 	.sleep_clock_accuracy_ppm = COND_CODE_1(DT_INST_NODE_HAS_PROP(0, sleep_clock),
 						 (DT_PROP(DT_INST_PHANDLE(0, sleep_clock),
 							  precision)),
-						 (0)),
+						 (5000)),
 };
 
 static const struct ieee802154_radio_api silabs_efr32_radio_api = {
