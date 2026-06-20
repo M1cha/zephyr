@@ -62,6 +62,7 @@ if(${CONFIG_SOC_GECKO_HAS_RADIO})
   )
   zephyr_include_directories_ifdef(CONFIG_SILABS_GECKO_PROTOCOL_CRYPTO
       ${SECURITY_DIR}/sl_component/sl_psa_driver/inc
+      ${SECURITY_DIR}/sl_component/sl_protocol_crypto/src
   )
 
   if(CONFIG_BT_SILABS_EFR32)
@@ -121,6 +122,27 @@ if(${CONFIG_SOC_GECKO_HAS_RADIO})
       zephyr_library_sources(${RADIO_DIR}/rail_lib/plugin/rail_util_protocol/sl_rail_util_protocol.c)
     endif()
 
+    if(CONFIG_IEEE802154_SILABS_EFR32)
+      zephyr_include_directories(CONFIG_IEEE802154_SILABS_EFR32
+        ${RADIO_DIR}/rail_lib/protocol/ieee802154
+        ieee802154
+      )
+      zephyr_library_sources(
+        ieee802154/sl_rail.c
+        ieee802154/sli_crypto.c
+        )
+    endif()
+  endif()
+
+  if(CONFIG_IEEE802154_SILABS_EFR32 AND NOT CONFIG_BUILD_ONLY_NO_BLOBS)
+    set(SL_OPENTHREAD_PAL_PREBUILT protocol/openthread/libs/libsl_openthread_efr32mg1x_gcc.a)
+    if(NOT EXISTS "${BLOBS_DIR}/${SL_OPENTHREAD_PAL_PREBUILT}")
+      message(FATAL_ERROR
+        "IEEE802154_SILABS_EFR32 requires the OpenThread PAL prebuilt library at:\n"
+        "  ${BLOBS_DIR}/${SL_OPENTHREAD_PAL_PREBUILT}\n"
+        "Install the hal_silabs module blobs or use CONFIG_BUILD_ONLY_NO_BLOBS for stubbed builds.")
+    endif()
+    add_prebuilt_library(libsl_openthread ${SL_OPENTHREAD_PAL_PREBUILT})
   endif()
 endif()
 
