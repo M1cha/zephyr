@@ -26,6 +26,7 @@
 		zephyr,sram = &sram0;
 		zephyr,uart-pipe = &usart0;
 		zephyr,bt-hci = &bt_hci_silabs;
+		zephyr,ieee802154 = &ieee802154;
 	};
 };
 
@@ -142,4 +143,11 @@
 
 &bt_hci_silabs {
 	status = "okay";
+};
+
+&radio {
+	ieee802154: ieee802154 {
+		compatible = "silabs,efr32-ieee802154";
+		status = "okay";
+	};
 };
