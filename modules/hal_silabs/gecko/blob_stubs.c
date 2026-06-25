@@ -7,7 +7,53 @@
 #include <sl_bt_ll_config.h>
 #endif
 
+#ifdef CONFIG_IEEE802154_SILABS_EFR32
+#include <rail_ieee802154.h>
+#endif
+
+bool RAIL_CancelMultiTimer(RAIL_MultiTimer_t *tmr)
+{
+	return true;
+}
+
+RAIL_Status_t RAIL_Calibrate(RAIL_Handle_t railHandle, RAIL_CalValues_t *calValues,
+			     RAIL_CalMask_t calForce)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_ConfigCal(RAIL_Handle_t railHandle, RAIL_CalMask_t calEnable)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_ConfigEvents(RAIL_Handle_t railHandle, RAIL_Events_t mask, RAIL_Events_t events)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+bool RAIL_ConfigMultiTimer(bool enable)
+{
+	return true;
+}
+
+RAIL_Status_t RAIL_ConfigRxOptions(RAIL_Handle_t railHandle, RAIL_RxOptions_t mask,
+				   RAIL_RxOptions_t options)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_ConfigTxPower(RAIL_Handle_t railHandle, const RAIL_TxPowerConfig_t *config)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
 RAIL_Status_t RAIL_ConfigSleep(RAIL_Handle_t railHandle, RAIL_SleepConfig_t sleepConfig)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_ConfigSleepAlt(RAIL_Handle_t railHandle, RAIL_TimerSyncConfig_t *syncConfig)
 {
 	return RAIL_STATUS_NO_ERROR;
 }
@@ -16,12 +62,121 @@ void RAIL_EnablePaCal(bool enable)
 {
 }
 
+RAIL_RadioState_t RAIL_GetRadioState(RAIL_Handle_t railHandle)
+{
+	return RAIL_RF_STATE_INACTIVE;
+}
+
+int16_t RAIL_GetRssiAlt(RAIL_Handle_t railHandle, RAIL_Time_t waitTimeout)
+{
+	return 0;
+}
+
+void RAIL_GetRxIncomingPacketInfo(RAIL_Handle_t railHandle, RAIL_RxPacketInfo_t *pPacketInfo)
+{
+}
+
+RAIL_Status_t RAIL_GetRxPacketDetailsAlt(RAIL_Handle_t railHandle,
+					 RAIL_RxPacketHandle_t packetHandle,
+					 RAIL_RxPacketDetails_t *pPacketDetails)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_RxPacketHandle_t RAIL_GetRxPacketInfo(RAIL_Handle_t railHandle,
+					   RAIL_RxPacketHandle_t packetHandle,
+					   RAIL_RxPacketInfo_t *pPacketInfo)
+{
+	return NULL;
+}
+
+RAIL_SchedulerStatus_t RAIL_GetSchedulerStatus(RAIL_Handle_t railHandle)
+{
+	return RAIL_SCHEDULER_STATUS_NO_ERROR;
+}
+
+uint32_t RAIL_GetSymbolRate(RAIL_Handle_t railHandle)
+{
+	return 0;
+}
+
+RAIL_Status_t RAIL_GetRxTimeSyncWordEndAlt(RAIL_Handle_t railHandle,
+					   RAIL_RxPacketDetails_t *pPacketDetails)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Time_t RAIL_GetTime(void)
+{
+	return 0;
+}
+
+void RAIL_Idle(RAIL_Handle_t railHandle, RAIL_IdleMode_t mode, bool wait)
+{
+}
+
+RAIL_Handle_t RAIL_Init(RAIL_Config_t *railCfg, RAIL_InitCompleteCallbackPtr_t cb)
+{
+	return NULL;
+}
+
 RAIL_Status_t RAIL_InitPowerManager(void)
 {
 	return RAIL_STATUS_NO_ERROR;
 }
 
+RAIL_Status_t RAIL_SetMultiTimer(RAIL_MultiTimer_t *tmr, RAIL_Time_t expirationTime,
+				 RAIL_TimeMode_t expirationMode, RAIL_MultiTimerCallback_t callback,
+				 void *cbArg)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_SetPtiProtocol(RAIL_Handle_t railHandle, RAIL_PtiProtocol_t protocol)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+uint16_t RAIL_SetTxFifo(RAIL_Handle_t railHandle, uint8_t *addr, uint16_t initLength, uint16_t size)
+{
+	return 0;
+}
+
+RAIL_Status_t RAIL_SetTxPowerDbm(RAIL_Handle_t railHandle, RAIL_TxPower_t power)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_StartCcaCsmaTx(RAIL_Handle_t railHandle, uint16_t channel,
+				  RAIL_TxOptions_t options, const RAIL_CsmaConfig_t *csmaConfig,
+				  const RAIL_SchedulerInfo_t *schedulerInfo)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_StartRx(RAIL_Handle_t railHandle, uint16_t channel,
+			   const RAIL_SchedulerInfo_t *schedulerInfo)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_StartTx(RAIL_Handle_t railHandle, uint16_t channel, RAIL_TxOptions_t options,
+			   const RAIL_SchedulerInfo_t *schedulerInfo)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
 void RAIL_VerifyTxPowerCurves(const struct RAIL_TxPowerCurvesConfigAlt *config)
+{
+}
+
+uint16_t RAIL_WriteTxFifo(RAIL_Handle_t railHandle, const uint8_t *dataPtr, uint16_t writeLength,
+			  bool reset)
+{
+	return 0;
+}
+
+void RAIL_YieldRadio(RAIL_Handle_t railHandle)
 {
 }
 
@@ -254,5 +409,65 @@ void sl_bthci_init_vs(void)
 sl_status_t sl_bt_ll_deinit(void)
 {
 	return SL_STATUS_OK;
+}
+#endif
+
+#ifdef CONFIG_IEEE802154_SILABS_EFR32
+RAIL_Status_t RAIL_IEEE802154_Config2p4GHzRadio(RAIL_Handle_t railHandle)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_ConfigCcaMode(RAIL_Handle_t railHandle,
+					    RAIL_IEEE802154_CcaMode_t ccaMode)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_GetAddress(RAIL_Handle_t railHandle,
+					 RAIL_IEEE802154_Address_t *pAddress)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_Init(RAIL_Handle_t railHandle, const RAIL_IEEE802154_Config_t *config)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_SetFramePending(RAIL_Handle_t railHandle)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_SetLongAddress(RAIL_Handle_t railHandle, const uint8_t *longAddr,
+					     uint8_t index)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_SetPanCoordinator(RAIL_Handle_t railHandle, bool isPanCoordinator)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_SetPanId(RAIL_Handle_t railHandle, uint16_t panId, uint8_t index)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_SetPromiscuousMode(RAIL_Handle_t railHandle, bool enable)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+RAIL_Status_t RAIL_IEEE802154_SetShortAddress(RAIL_Handle_t railHandle, uint16_t shortAddr,
+					      uint8_t index)
+{
+	return RAIL_STATUS_NO_ERROR;
+}
+
+void sl_openthread_init(void)
+{
 }
 #endif
