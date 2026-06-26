@@ -22,9 +22,11 @@
 
 /* Basic clock sources. */
 #define CLK_LFXO               DT_INST_CLOCKS_CTLR_BY_NAME(0, lfxo)
+#define CLK_LFXO_CTUNE         DT_PROP(CLK_LFXO, ctune)
 #define CLK_LFXO_ENABLED       DT_NODE_HAS_STATUS(CLK_LFXO, okay)
 #define CLK_LFXO_FREQ          DT_PROP_OR(CLK_LFXO, clock_frequency, 0)
 #define CLK_LFXO_PRECISION     DT_PROP(CLK_LFXO, precision)
+#define CLK_LFXO_HAS_CTUNE     DT_NODE_HAS_PROP(CLK_LFXO, ctune)
 #define CLK_LFXO_HAS_PRECISION DT_NODE_HAS_PROP(CLK_LFXO, precision)
 
 #define CLK_LFRCO         DT_INST_CLOCKS_CTLR_BY_NAME(0, lfrco)
@@ -116,6 +118,10 @@ static void init_lfxo(void)
 	 * used as a SYSCLK/HFCLK source.
 	 */
 	if (CMU_ClockSelectGet(cmuClock_HF) != cmuSelect_LFXO) {
+#if CLK_LFXO_HAS_CTUNE
+		lfxoInit.ctune = CLK_LFXO_CTUNE;
+#endif
+
 		CMU_LFXOInit(&lfxoInit);
 		CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 #if CLK_LFXO_HAS_PRECISION

@@ -8,6 +8,10 @@ description: |
 include: fixed-clock.yaml
 
 properties:
+  ctune:
+    type: int
+    description: |
+      Load capacitance configuration.
   precision:
     type: int
     description: Precision configuration
