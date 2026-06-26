@@ -21,9 +21,11 @@
 #define CLK_SRC_IS(clk, src) DT_SAME_NODE(DT_CLOCKS_CTLR_BY_IDX(clk, 0), src)
 
 /* Basic clock sources. */
-#define CLK_LFXO         DT_INST_CLOCKS_CTLR_BY_NAME(0, lfxo)
-#define CLK_LFXO_ENABLED DT_NODE_HAS_STATUS(CLK_LFXO, okay)
-#define CLK_LFXO_FREQ    DT_PROP_OR(CLK_LFXO, clock_frequency, 0)
+#define CLK_LFXO               DT_INST_CLOCKS_CTLR_BY_NAME(0, lfxo)
+#define CLK_LFXO_ENABLED       DT_NODE_HAS_STATUS(CLK_LFXO, okay)
+#define CLK_LFXO_FREQ          DT_PROP_OR(CLK_LFXO, clock_frequency, 0)
+#define CLK_LFXO_PRECISION     DT_PROP(CLK_LFXO, precision)
+#define CLK_LFXO_HAS_PRECISION DT_NODE_HAS_PROP(CLK_LFXO, precision)
 
 #define CLK_LFRCO         DT_INST_CLOCKS_CTLR_BY_NAME(0, lfrco)
 #define CLK_LFRCO_ENABLED DT_NODE_HAS_STATUS(CLK_LFRCO, okay)
@@ -116,6 +118,9 @@ static void init_lfxo(void)
 	if (CMU_ClockSelectGet(cmuClock_HF) != cmuSelect_LFXO) {
 		CMU_LFXOInit(&lfxoInit);
 		CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
+#if CLK_LFXO_HAS_PRECISION
+		CMU_LFXOPrecisionSet(CLK_LFXO_PRECISION);
+#endif
 	}
 
 	SystemLFXOClockSet(CLK_LFXO_FREQ);
