@@ -6,3 +6,8 @@ description: |
   Low-Frequency RC Oscillator peripheral.
 
 include: fixed-clock.yaml
+
+properties:
+  precision:
+    type: int
+    description: Precision configuration

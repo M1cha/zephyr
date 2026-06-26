@@ -36,6 +36,8 @@
 
 &clk_hfxo {
 	clock-frequency = <38400000>;
+	ctune = <160>;
+	precision = <50>;
 	status = "okay";
 };
 
