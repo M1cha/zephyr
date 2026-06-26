@@ -32,9 +32,11 @@
 #define CLK_HFRCO_ENABLED DT_NODE_HAS_STATUS(CLK_HFRCO, okay)
 #define CLK_HFRCO_FREQ    DT_PROP_OR(CLK_HFRCO, clock_frequency, 0)
 
-#define CLK_HFXO         DT_INST_CLOCKS_CTLR_BY_NAME(0, hfxo)
-#define CLK_HFXO_ENABLED DT_NODE_HAS_STATUS(CLK_HFXO, okay)
-#define CLK_HFXO_FREQ    DT_PROP_OR(CLK_HFXO, clock_frequency, 0)
+#define CLK_HFXO               DT_INST_CLOCKS_CTLR_BY_NAME(0, hfxo)
+#define CLK_HFXO_ENABLED       DT_NODE_HAS_STATUS(CLK_HFXO, okay)
+#define CLK_HFXO_FREQ          DT_PROP_OR(CLK_HFXO, clock_frequency, 0)
+#define CLK_HFXO_PRECISION     DT_PROP(CLK_HFXO, precision)
+#define CLK_HFXO_HAS_PRECISION DT_NODE_HAS_PROP(CLK_HFXO, precision)
 
 /* Derived Clocks. */
 #define CLK_HF      DT_INST_CLOCKS_CTLR_BY_NAME(0, hf)
@@ -115,6 +117,9 @@ static void init_hfxo(void)
 {
 	if (CMU_ClockSelectGet(cmuClock_HF) != cmuSelect_HFXO) {
 		CMU_HFXOInit(&hfxoInit);
+#if CLK_HFXO_HAS_PRECISION
+		CMU_HFXOPrecisionSet(CLK_HFXO_PRECISION);
+#endif
 		CMU_OscillatorEnable(cmuOsc_HFXO, true, true);
 	}
 

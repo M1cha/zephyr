@@ -6,3 +6,8 @@ description: |
   High-Frequency Crystal Oscillator peripheral.
 
 include: fixed-clock.yaml
+
+properties:
+  precision:
+    type: int
+    description: Precision configuration
