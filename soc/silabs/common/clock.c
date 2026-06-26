@@ -33,9 +33,11 @@
 #define CLK_HFRCO_FREQ    DT_PROP_OR(CLK_HFRCO, clock_frequency, 0)
 
 #define CLK_HFXO               DT_INST_CLOCKS_CTLR_BY_NAME(0, hfxo)
+#define CLK_HFXO_CTUNE         DT_PROP(CLK_HFXO, ctune)
 #define CLK_HFXO_ENABLED       DT_NODE_HAS_STATUS(CLK_HFXO, okay)
 #define CLK_HFXO_FREQ          DT_PROP_OR(CLK_HFXO, clock_frequency, 0)
 #define CLK_HFXO_PRECISION     DT_PROP(CLK_HFXO, precision)
+#define CLK_HFXO_HAS_CTUNE     DT_NODE_HAS_PROP(CLK_HFXO, ctune)
 #define CLK_HFXO_HAS_PRECISION DT_NODE_HAS_PROP(CLK_HFXO, precision)
 
 /* Derived Clocks. */
@@ -89,6 +91,12 @@ BUILD_ASSERT(CLK_LFC_MULT == 1, "Unsupported LFC multiplier");
 BUILD_ASSERT(CLK_LFE_DIV == 1, "Unsupported LFA divider");
 BUILD_ASSERT(CLK_LFE_MULT == 1, "Unsupported LFA multiplier");
 
+#ifdef CONFIG_SOC_FAMILY_SILABS_S1
+/* Fetch CTUNE value from USERDATA page as a manufacturing token. */
+#define MFG_CTUNE_ADDR 0x0FE00100UL
+#define MFG_CTUNE_VAL  (*((uint16_t *)(MFG_CTUNE_ADDR)))
+#endif
+
 /**
  * @brief Initialization parameters for the external high frequency oscillator
  */
@@ -113,9 +121,35 @@ static void init_lfxo(void)
 	SystemLFXOClockSet(CLK_LFXO_FREQ);
 }
 
+static void get_hfxo_ctune(uint16_t *pctune)
+{
+#if defined(_DEVINFO_MODXOCAL_HFXOCTUNE_MASK)
+	/* Use HFXO tuning value from DEVINFO if available (PCB modules). */
+	if ((DEVINFO->MODULEINFO & _DEVINFO_MODULEINFO_HFXOCALVAL_MASK) == 0) {
+		*pctune = DEVINFO->MODXOCAL & _DEVINFO_MODXOCAL_HFXOCTUNE_MASK;
+		return;
+	}
+#endif
+
+#ifdef CONFIG_SOC_FAMILY_SILABS_S1
+	/* Use HFXO tuning value from MFG token in UD page. */
+	if (MFG_CTUNE_VAL != 0xFFFF) {
+		*pctune = MFG_CTUNE_VAL;
+		return;
+	}
+#endif
+
+	/* Use HFXO tuning value from device tree as fallback. */
+#if CLK_HFXO_HAS_CTUNE
+	*pctune = CLK_HFXO_CTUNE;
+#endif
+}
+
 static void init_hfxo(void)
 {
 	if (CMU_ClockSelectGet(cmuClock_HF) != cmuSelect_HFXO) {
+		get_hfxo_ctune(&hfxoInit.ctuneSteadyState);
+
 		CMU_HFXOInit(&hfxoInit);
 #if CLK_HFXO_HAS_PRECISION
 		CMU_HFXOPrecisionSet(CLK_HFXO_PRECISION);
