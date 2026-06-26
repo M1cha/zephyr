@@ -13,11 +13,9 @@
 #include <zephyr/sys/__assert.h>
 #include <zephyr/sys/util.h>
 
-#define ASSERT_FIELDS_COMPATIBLE(s1, f1, s2, f2)                                                   \
-	BUILD_ASSERT(offsetof(s1, f1) == offsetof(s2, f2));                                        \
-	BUILD_ASSERT(SIZEOF_FIELD(s1, f1) == SIZEOF_FIELD(s2, f2));
-#define PCAST(type, v)       ((type *)(void *)(v))
-#define CONST_PCAST(type, v) ((const type *)(const void *)(v))
+#define ASSERT_FIELDS_COMPATIBLE(s, f1, f2)                                                        \
+	BUILD_ASSERT(offsetof(s, f1) == offsetof(s, legacy.f2));                                   \
+	BUILD_ASSERT(SIZEOF_FIELD(s, f1) == SIZEOF_FIELD(s, legacy.f2));
 
 #define SL_RAIL_EVENT_CAL_NEEDED                      RAIL_EVENT_CAL_NEEDED
 #define SL_RAIL_EVENT_IEEE802154_DATA_REQUEST_COMMAND RAIL_EVENT_IEEE802154_DATA_REQUEST_COMMAND
@@ -76,15 +74,17 @@
 #define SL_RAIL_RX_OPTION_STORE_CRC               RAIL_RX_OPTION_STORE_CRC
 #define SL_RAIL_RX_OPTION_TRACK_ABORTED_FRAMES    RAIL_RX_OPTION_TRACK_ABORTED_FRAMES
 
-#define SL_RAIL_RX_OPTIONS_NONE                   RAIL_RX_OPTIONS_NONE
-#define SL_RAIL_TX_OPTIONS_DEFAULT     RAIL_TX_OPTIONS_DEFAULT
+#define SL_RAIL_RX_OPTIONS_NONE    RAIL_RX_OPTIONS_NONE
+#define SL_RAIL_TX_OPTIONS_DEFAULT RAIL_TX_OPTIONS_DEFAULT
 
 #define SL_RAIL_TX_OPTION_WAIT_FOR_ACK RAIL_TX_OPTION_WAIT_FOR_ACK
 
 #define SL_RAIL_PACKET_TIME_INVALID RAIL_PACKET_TIME_INVALID
 
 #define SL_RAIL_CSMA_CONFIG_802_15_4_2003_2P4_GHZ_OQPSK_CSMA                                       \
-	RAIL_CSMA_CONFIG_802_15_4_2003_2p4_GHz_OQPSK_CSMA
+	{                                                                                          \
+		.legacy = RAIL_CSMA_CONFIG_802_15_4_2003_2p4_GHz_OQPSK_CSMA,                       \
+	}
 
 #define SL_RAIL_TIMER_SYNC_DEFAULT RAIL_TIMER_SYNC_DEFAULT
 
@@ -118,133 +118,150 @@ typedef uint32_t sl_rail_time_t;
 typedef uint64_t sl_rail_packet_queue_entry_t;
 
 typedef struct sl_rail_rx_packet_info {
-	RAIL_RxPacketStatus_t packet_status;
-	uint16_t packet_bytes;
-	uint16_t first_portion_bytes;
-	uint8_t *p_first_portion_data;
-	uint8_t *p_last_portion_data;
-	RAIL_AddrFilterMask_t filter_mask;
+	union {
+		RAIL_RxPacketInfo_t legacy;
+		struct {
+			RAIL_RxPacketStatus_t packet_status;
+			uint16_t packet_bytes;
+			uint16_t first_portion_bytes;
+			uint8_t *p_first_portion_data;
+			uint8_t *p_last_portion_data;
+			RAIL_AddrFilterMask_t filter_mask;
+		};
+	};
 } sl_rail_rx_packet_info_t;
 BUILD_ASSERT(sizeof(sl_rail_rx_packet_info_t) == sizeof(RAIL_RxPacketInfo_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, packet_status, RAIL_RxPacketInfo_t,
-			 packetStatus);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, packet_bytes, RAIL_RxPacketInfo_t, packetBytes);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, first_portion_bytes, RAIL_RxPacketInfo_t,
-			 firstPortionBytes);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, p_first_portion_data, RAIL_RxPacketInfo_t,
-			 firstPortionData);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, p_last_portion_data, RAIL_RxPacketInfo_t,
-			 lastPortionData);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, filter_mask, RAIL_RxPacketInfo_t, filterMask);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, packet_status, packetStatus);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, packet_bytes, packetBytes);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, first_portion_bytes, firstPortionBytes);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, p_first_portion_data, firstPortionData);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, p_last_portion_data, lastPortionData);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_info_t, filter_mask, filterMask);
 
 typedef struct sl_rail_packet_time_stamp {
-	RAIL_Time_t packet_time;
-	uint16_t total_packet_bytes;
-	RAIL_PacketTimePosition_t time_position;
-	RAIL_Time_t packet_duration_us;
+	union {
+		RAIL_PacketTimeStamp_t legacy;
+		struct {
+			RAIL_Time_t packet_time;
+			uint16_t total_packet_bytes;
+			RAIL_PacketTimePosition_t time_position;
+			RAIL_Time_t packet_duration_us;
+		};
+	};
 } sl_rail_packet_time_stamp_t;
 BUILD_ASSERT(sizeof(sl_rail_packet_time_stamp_t) == sizeof(RAIL_PacketTimeStamp_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, packet_time, RAIL_PacketTimeStamp_t,
-			 packetTime);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, total_packet_bytes, RAIL_PacketTimeStamp_t,
-			 totalPacketBytes);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, time_position, RAIL_PacketTimeStamp_t,
-			 timePosition);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, packet_duration_us, RAIL_PacketTimeStamp_t,
-			 packetDurationUs);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, packet_time, packetTime);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, total_packet_bytes, totalPacketBytes);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, time_position, timePosition);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_packet_time_stamp_t, packet_duration_us, packetDurationUs);
 
 typedef struct sl_rail_rx_packet_details {
-	sl_rail_packet_time_stamp_t time_received;
-	bool crc_passed;
-	bool is_ack;
-	int8_t rssi_dbm;
-	uint8_t lqi;
-	uint8_t sync_word_id;
-	uint8_t sub_phy_id;
-	uint8_t antenna_id;
-	uint8_t channel_hopping_channel_index;
-	uint16_t channel;
+	union {
+		RAIL_RxPacketDetails_t legacy;
+		struct {
+			sl_rail_packet_time_stamp_t time_received;
+			bool crc_passed;
+			bool is_ack;
+			int8_t rssi_dbm;
+			uint8_t lqi;
+			uint8_t sync_word_id;
+			uint8_t sub_phy_id;
+			uint8_t antenna_id;
+			uint8_t channel_hopping_channel_index;
+			uint16_t channel;
+		};
+	};
 } sl_rail_rx_packet_details_t;
 BUILD_ASSERT(sizeof(sl_rail_rx_packet_details_t) == sizeof(RAIL_RxPacketDetails_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, time_received, RAIL_RxPacketDetails_t,
-			 timeReceived);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, crc_passed, RAIL_RxPacketDetails_t,
-			 crcPassed);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, is_ack, RAIL_RxPacketDetails_t, isAck);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, rssi_dbm, RAIL_RxPacketDetails_t, rssi);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, lqi, RAIL_RxPacketDetails_t, lqi);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, sync_word_id, RAIL_RxPacketDetails_t,
-			 syncWordId);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, sub_phy_id, RAIL_RxPacketDetails_t, subPhyId);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, antenna_id, RAIL_RxPacketDetails_t,
-			 antennaId);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, time_received, timeReceived);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, crc_passed, crcPassed);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, is_ack, isAck);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, rssi_dbm, rssi);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, lqi, lqi);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, sync_word_id, syncWordId);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, sub_phy_id, subPhyId);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, antenna_id, antennaId);
 ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, channel_hopping_channel_index,
-			 RAIL_RxPacketDetails_t, channelHoppingChannelIndex);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, channel, RAIL_RxPacketDetails_t, channel);
+			 channelHoppingChannelIndex);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_rx_packet_details_t, channel, channel);
 
 typedef struct sl_rail_scheduler_info {
-	uint8_t priority;
-	RAIL_Time_t slip_time;
-	RAIL_Time_t transaction_time;
+	union {
+		RAIL_SchedulerInfo_t legacy;
+		struct {
+			uint8_t priority;
+			RAIL_Time_t slip_time;
+			RAIL_Time_t transaction_time;
+		};
+	};
 } sl_rail_scheduler_info_t;
 BUILD_ASSERT(sizeof(sl_rail_scheduler_info_t) == sizeof(RAIL_SchedulerInfo_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_scheduler_info_t, priority, RAIL_SchedulerInfo_t, priority);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_scheduler_info_t, slip_time, RAIL_SchedulerInfo_t, slipTime);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_scheduler_info_t, transaction_time, RAIL_SchedulerInfo_t,
-			 transactionTime);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_scheduler_info_t, priority, priority);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_scheduler_info_t, slip_time, slipTime);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_scheduler_info_t, transaction_time, transactionTime);
 
 typedef struct sl_rail_auto_ack_config {
-	bool enable;
-	uint16_t ack_timeout_us;
-	RAIL_StateTransitions_t rx_transitions;
-	RAIL_StateTransitions_t tx_transitions;
+	union {
+		RAIL_AutoAckConfig_t legacy;
+		struct {
+			bool enable;
+			uint16_t ack_timeout_us;
+			RAIL_StateTransitions_t rx_transitions;
+			RAIL_StateTransitions_t tx_transitions;
+		};
+	};
 } sl_rail_auto_ack_config_t;
 BUILD_ASSERT(sizeof(sl_rail_auto_ack_config_t) == sizeof(RAIL_AutoAckConfig_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, enable, RAIL_AutoAckConfig_t, enable);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, ack_timeout_us, RAIL_AutoAckConfig_t,
-			 ackTimeout);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, rx_transitions, RAIL_AutoAckConfig_t,
-			 rxTransitions);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, tx_transitions, RAIL_AutoAckConfig_t,
-			 txTransitions);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, enable, enable);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, ack_timeout_us, ackTimeout);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, rx_transitions, rxTransitions);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_auto_ack_config_t, tx_transitions, txTransitions);
 
 typedef struct sl_rail_state_timing {
-	RAIL_TransitionTime_t idle_to_rx;
-	RAIL_TransitionTime_t tx_to_rx;
-	RAIL_TransitionTime_t idle_to_tx;
-	RAIL_TransitionTime_t rx_to_tx;
-	RAIL_TransitionTime_t rxsearch_timeout;
-	RAIL_TransitionTime_t tx_to_rxsearch_timeout;
-	RAIL_TransitionTime_t tx_to_tx;
+	union {
+		RAIL_StateTiming_t legacy;
+		struct {
+			RAIL_TransitionTime_t idle_to_rx;
+			RAIL_TransitionTime_t tx_to_rx;
+			RAIL_TransitionTime_t idle_to_tx;
+			RAIL_TransitionTime_t rx_to_tx;
+			RAIL_TransitionTime_t rxsearch_timeout;
+			RAIL_TransitionTime_t tx_to_rxsearch_timeout;
+			RAIL_TransitionTime_t tx_to_tx;
+		};
+	};
 } sl_rail_state_timing_t;
 BUILD_ASSERT(sizeof(sl_rail_state_timing_t) == sizeof(RAIL_StateTiming_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, idle_to_rx, RAIL_StateTiming_t, idleToRx);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, tx_to_rx, RAIL_StateTiming_t, txToRx);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, idle_to_tx, RAIL_StateTiming_t, idleToTx);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, rx_to_tx, RAIL_StateTiming_t, rxToTx);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, rxsearch_timeout, RAIL_StateTiming_t,
-			 rxSearchTimeout);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, tx_to_rxsearch_timeout, RAIL_StateTiming_t,
-			 txToRxSearchTimeout);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, tx_to_tx, RAIL_StateTiming_t, txToTx);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, idle_to_rx, idleToRx);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, tx_to_rx, txToRx);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, idle_to_tx, idleToTx);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, rx_to_tx, rxToTx);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, rxsearch_timeout, rxSearchTimeout);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, tx_to_rxsearch_timeout, txToRxSearchTimeout);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_state_timing_t, tx_to_tx, txToTx);
 
 typedef struct sl_rail_csma_config {
-	uint8_t csma_min_bo_exp;
-	uint8_t csma_max_bo_exp;
-	uint8_t csma_tries;
-	int8_t cca_threshold_dbm;
-	uint16_t cca_backoff;
-	uint16_t cca_duration;
-	RAIL_Time_t csma_timeout;
+	union {
+		RAIL_CsmaConfig_t legacy;
+		struct {
+			uint8_t csma_min_bo_exp;
+			uint8_t csma_max_bo_exp;
+			uint8_t csma_tries;
+			int8_t cca_threshold_dbm;
+			uint16_t cca_backoff;
+			uint16_t cca_duration;
+			RAIL_Time_t csma_timeout;
+		};
+	};
 } sl_rail_csma_config_t;
 BUILD_ASSERT(sizeof(sl_rail_csma_config_t) == sizeof(RAIL_CsmaConfig_t));
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_min_bo_exp, RAIL_CsmaConfig_t, csmaMinBoExp);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_max_bo_exp, RAIL_CsmaConfig_t, csmaMaxBoExp);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_tries, RAIL_CsmaConfig_t, csmaTries);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, cca_threshold_dbm, RAIL_CsmaConfig_t, ccaThreshold);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, cca_backoff, RAIL_CsmaConfig_t, ccaBackoff);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, cca_duration, RAIL_CsmaConfig_t, ccaDuration);
-ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_timeout, RAIL_CsmaConfig_t, csmaTimeout);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_min_bo_exp, csmaMinBoExp);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_max_bo_exp, csmaMaxBoExp);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_tries, csmaTries);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, cca_threshold_dbm, ccaThreshold);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, cca_backoff, ccaBackoff);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, cca_duration, ccaDuration);
+ASSERT_FIELDS_COMPATIBLE(sl_rail_csma_config_t, csma_timeout, csmaTimeout);
 
 typedef struct sl_rail_config {
 	void (*events_callback)(RAIL_Handle_t railHandle, RAIL_Events_t events);
@@ -379,32 +396,28 @@ sl_rail_start_cca_csma_tx(sl_rail_handle_t rail_handle, uint16_t channel,
 			  const sl_rail_csma_config_t *p_csma_config,
 			  const sl_rail_scheduler_info_t *p_scheduler_info)
 {
-	return RAIL_StartCcaCsmaTx(rail_handle, channel, tx_options,
-				   CONST_PCAST(RAIL_CsmaConfig_t, p_csma_config),
-				   CONST_PCAST(RAIL_SchedulerInfo_t, p_scheduler_info));
+	return RAIL_StartCcaCsmaTx(rail_handle, channel, tx_options, &p_csma_config->legacy,
+				   &p_scheduler_info->legacy);
 }
 
 static inline sl_rail_status_t sl_rail_start_rx(sl_rail_handle_t rail_handle, uint16_t channel,
 						const sl_rail_scheduler_info_t *p_scheduler_info)
 {
-	return RAIL_StartRx(rail_handle, channel,
-			    CONST_PCAST(RAIL_SchedulerInfo_t, p_scheduler_info));
+	return RAIL_StartRx(rail_handle, channel, &p_scheduler_info->legacy);
 }
 
 static inline sl_rail_status_t sl_rail_start_tx(sl_rail_handle_t rail_handle, uint16_t channel,
 						sl_rail_tx_options_t tx_options,
 						const sl_rail_scheduler_info_t *p_scheduler_info)
 {
-	return RAIL_StartTx(rail_handle, channel, tx_options,
-			    CONST_PCAST(RAIL_SchedulerInfo_t, p_scheduler_info));
+	return RAIL_StartTx(rail_handle, channel, tx_options, &p_scheduler_info->legacy);
 }
 
 static inline sl_rail_status_t
 sl_rail_get_rx_time_sync_word_end(sl_rail_handle_t rail_handle,
 				  sl_rail_rx_packet_details_t *p_packet_details)
 {
-	return RAIL_GetRxTimeSyncWordEndAlt(rail_handle,
-					    PCAST(RAIL_RxPacketDetails_t, p_packet_details));
+	return RAIL_GetRxTimeSyncWordEndAlt(rail_handle, &p_packet_details->legacy);
 }
 
 static inline sl_rail_status_t
@@ -412,16 +425,14 @@ sl_rail_get_rx_packet_details(sl_rail_handle_t rail_handle,
 			      sl_rail_rx_packet_handle_t packet_handle,
 			      sl_rail_rx_packet_details_t *p_packet_details)
 {
-	return RAIL_GetRxPacketDetailsAlt(rail_handle, packet_handle,
-					  PCAST(RAIL_RxPacketDetails_t, p_packet_details));
+	return RAIL_GetRxPacketDetailsAlt(rail_handle, packet_handle, &p_packet_details->legacy);
 }
 
 static inline sl_rail_rx_packet_handle_t
 sl_rail_get_rx_packet_info(sl_rail_handle_t rail_handle, sl_rail_rx_packet_handle_t packet_handle,
 			   sl_rail_rx_packet_info_t *p_packet_info)
 {
-	return RAIL_GetRxPacketInfo(rail_handle, packet_handle,
-				    PCAST(RAIL_RxPacketInfo_t, p_packet_info));
+	return RAIL_GetRxPacketInfo(rail_handle, packet_handle, &p_packet_info->legacy);
 }
 
 static inline sl_rail_status_t sl_rail_yield_radio(sl_rail_handle_t rail_handle)
