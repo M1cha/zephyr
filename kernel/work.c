@@ -817,21 +817,9 @@ void k_work_queue_init(struct k_work_q *queue)
 	SYS_PORT_TRACING_OBJ_INIT(k_work_queue, queue);
 }
 
-void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *cfg)
-{
-	__ASSERT_NO_MSG(!flag_test(&queue->flags, K_WORK_QUEUE_STARTED_BIT));
-
-	if (!flag_test(&queue->flags, K_WORK_QUEUE_INITIALIZED_BIT)) {
-		k_work_queue_init(queue);
-		flag_set(&queue->flags, K_WORK_QUEUE_INITIALIZED_BIT);
-	}
-
+static void apply_work_queue_config(struct k_work_q *queue, const struct k_work_queue_config *cfg) {
 	if ((cfg != NULL) && cfg->no_yield) {
 		flag_set(&queue->flags, K_WORK_QUEUE_NO_YIELD_BIT);
-	}
-
-	if ((cfg != NULL) && (cfg->name != NULL)) {
-		k_thread_name_set(_current, cfg->name);
 	}
 
 #if defined(CONFIG_WORKQUEUE_WORK_TIMEOUT)
@@ -842,7 +830,28 @@ void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *
 	}
 #endif /* defined(CONFIG_WORKQUEUE_WORK_TIMEOUT) */
 
+	if ((cfg != NULL) && (cfg->name != NULL)) {
+		k_thread_name_set(queue->thread_id, cfg->name);
+	}
+
+	if ((cfg != NULL) && (cfg->essential)) {
+		queue->thread_id->base.user_options |= K_ESSENTIAL;
+	}
+}
+
+void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *cfg)
+{
+	__ASSERT_NO_MSG(!flag_test(&queue->flags, K_WORK_QUEUE_STARTED_BIT));
+
+	if (!flag_test(&queue->flags, K_WORK_QUEUE_INITIALIZED_BIT)) {
+		k_work_queue_init(queue);
+		flag_set(&queue->flags, K_WORK_QUEUE_INITIALIZED_BIT);
+	}
+
 	queue->thread_id = _current;
+
+	apply_work_queue_config(queue, cfg);
+
 	flag_set(&queue->flags, K_WORK_QUEUE_STARTED_BIT);
 	work_queue_main(queue, NULL, NULL);
 }
@@ -869,10 +878,6 @@ void k_work_queue_start(struct k_work_q *queue,
 
 	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_work_queue, start, queue);
 
-	if ((cfg != NULL) && cfg->no_yield) {
-		flag_set(&queue->flags, K_WORK_QUEUE_NO_YIELD_BIT);
-	}
-
 	/* It hasn't actually been started yet, but all the state is in place
 	 * so we can submit things and once the thread gets control it's ready
 	 * to roll.
@@ -883,23 +888,10 @@ void k_work_queue_start(struct k_work_q *queue,
 			      work_queue_main, queue, NULL, NULL,
 			      prio, 0, K_FOREVER);
 
-	if ((cfg != NULL) && (cfg->name != NULL)) {
-		k_thread_name_set(&queue->thread, cfg->name);
-	}
-
-	if ((cfg != NULL) && (cfg->essential)) {
-		queue->thread.base.user_options |= K_ESSENTIAL;
-	}
-
-#if defined(CONFIG_WORKQUEUE_WORK_TIMEOUT)
-	if ((cfg != NULL) && (cfg->work_timeout_ms)) {
-		queue->work_timeout = K_MSEC(cfg->work_timeout_ms);
-	} else {
-		queue->work_timeout = K_FOREVER;
-	}
-#endif /* defined(CONFIG_WORKQUEUE_WORK_TIMEOUT) */
-
 	queue->thread_id = &queue->thread;
+
+	apply_work_queue_config(queue, cfg);
+
 	k_thread_start(&queue->thread);
 
 	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_work_queue, start, queue);
