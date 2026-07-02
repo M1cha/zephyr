@@ -856,6 +856,7 @@ void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *
 	work_queue_main(queue, NULL, NULL);
 }
 
+#ifdef CONFIG_WORKQUEUE_BUILTIN_THREAD
 void k_work_queue_start(struct k_work_q *queue,
 			k_thread_stack_t *stack,
 			size_t stack_size,
@@ -898,6 +899,8 @@ void k_work_queue_start(struct k_work_q *queue,
 
 	TOOLCHAIN_ENABLE_WARNING("-Wdeprecated-declarations");
 }
+
+#endif /* CONFIG_WORKQUEUE_BUILTIN_THREAD */
 
 void k_work_queue_start_with_thread(struct k_work_q *queue,
 			struct k_thread *thread,

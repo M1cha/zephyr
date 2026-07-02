@@ -494,6 +494,13 @@ config WORKQUEUE_WORK_TIMEOUT
 	  execute, the work queue thread will be aborted, and an error will be
 	  logged.
 
+config WORKQUEUE_BUILTIN_THREAD
+	bool "Support builtin workqueue thread"
+	default y
+	help
+	  If enabled, struct k_work_q has storage for an internal thread. This
+	  is required for k_work_queue_start.
+
 menu "System Work Queue Options"
 config SYSTEM_WORKQUEUE_STACK_SIZE
 	int "System workqueue stack size"
