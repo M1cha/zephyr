@@ -899,6 +899,40 @@ void k_work_queue_start(struct k_work_q *queue,
 	TOOLCHAIN_ENABLE_WARNING("-Wdeprecated-declarations");
 }
 
+void k_work_queue_start_with_thread(struct k_work_q *queue,
+			struct k_thread *thread,
+			k_thread_stack_t *stack,
+			size_t stack_size,
+			int prio,
+			const struct k_work_queue_config *cfg)
+{
+	__ASSERT_NO_MSG(queue);
+	__ASSERT_NO_MSG(thread);
+	__ASSERT_NO_MSG(stack);
+	__ASSERT_NO_MSG(flag_test(&queue->flags, K_WORK_QUEUE_INITIALIZED_BIT));
+	__ASSERT_NO_MSG(!flag_test(&queue->flags, K_WORK_QUEUE_STARTED_BIT));
+
+	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_work_queue, start, queue);
+
+	/* It hasn't actually been started yet, but all the state is in place
+	 * so we can submit things and once the thread gets control it's ready
+	 * to roll.
+	 */
+	flag_set(&queue->flags, K_WORK_QUEUE_STARTED_BIT);
+
+	(void)k_thread_create(thread, stack, stack_size,
+			      work_queue_main, queue, NULL, NULL,
+			      prio, 0, K_FOREVER);
+
+	queue->thread_id = thread;
+
+	apply_work_queue_config(queue, cfg);
+
+	k_thread_start(thread);
+
+	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_work_queue, start, queue);
+}
+
 int k_work_queue_drain(struct k_work_q *queue,
 		       bool plug)
 {
