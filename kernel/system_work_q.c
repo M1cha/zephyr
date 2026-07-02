@@ -14,6 +14,14 @@
 #include <zephyr/kernel.h>
 #include <zephyr/init.h>
 
+static const struct k_work_queue_config cfg = {
+	.name = "sysworkq",
+	.no_yield = IS_ENABLED(CONFIG_SYSTEM_WORKQUEUE_NO_YIELD),
+	.essential = true,
+	.work_timeout_ms = CONFIG_SYSTEM_WORKQUEUE_WORK_TIMEOUT_MS,
+};
+
+#ifdef CONFIG_WORKQUEUE_BUILTIN_THREAD
 static K_KERNEL_STACK_DEFINE(sys_work_q_stack,
 			     CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE);
 
@@ -21,18 +29,22 @@ struct k_work_q k_sys_work_q;
 
 static int k_sys_work_q_init(void)
 {
-	static const struct k_work_queue_config cfg = {
-		.name = "sysworkq",
-		.no_yield = IS_ENABLED(CONFIG_SYSTEM_WORKQUEUE_NO_YIELD),
-		.essential = true,
-		.work_timeout_ms = CONFIG_SYSTEM_WORKQUEUE_WORK_TIMEOUT_MS,
-	};
+	/* This whole function will be removed, once
+	 * CONFIG_WORKQUEUE_BUILTIN_THREAD gets removed.
+	 */
+	TOOLCHAIN_DISABLE_WARNING("-Wdeprecated-declarations");
 
 	k_work_queue_start(&k_sys_work_q,
 			    sys_work_q_stack,
 			    K_KERNEL_STACK_SIZEOF(sys_work_q_stack),
 			    CONFIG_SYSTEM_WORKQUEUE_PRIORITY, &cfg);
+
+	TOOLCHAIN_ENABLE_WARNING("-Wdeprecated-declarations");
 	return 0;
 }
 
 SYS_INIT(k_sys_work_q_init, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);
+#else
+K_WORK_QUEUE_DEFINE(k_sys_work_q, CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE,
+		    CONFIG_SYSTEM_WORKQUEUE_PRIORITY, &cfg);
+#endif /* CONFIG_WORKQUEUE_BUILTIN_THREAD */
