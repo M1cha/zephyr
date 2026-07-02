@@ -933,6 +933,22 @@ void k_work_queue_start_with_thread(struct k_work_q *queue,
 	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_work_queue, start, queue);
 }
 
+
+static int k_work_q_init(void)
+{
+	STRUCT_SECTION_FOREACH(_static_work_q_data, work_q_data) {
+		k_work_queue_start_with_thread(work_q_data->queue,
+				work_q_data->thread,
+				work_q_data->stack,
+				work_q_data->stack_size,
+				work_q_data->prio,
+				work_q_data->cfg);
+	}
+
+	return 0;
+}
+SYS_INIT(k_work_q_init, POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEFAULT);
+
 int k_work_queue_drain(struct k_work_q *queue,
 		       bool plug)
 {

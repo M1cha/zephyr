@@ -4137,6 +4137,35 @@ bool k_work_cancel_sync(struct k_work *work, struct k_work_sync *sync);
  */
 void k_work_queue_init(struct k_work_q *queue);
 
+struct _static_work_q_data {
+	struct k_work_q *queue;
+	int prio;
+	const struct k_work_queue_config *cfg;
+
+	k_thread_stack_t *stack;
+	size_t stack_size;
+	struct k_thread *thread;
+};
+
+#define K_WORK_QUEUE_DEFINE(name, _stack_size, _prio, _cfg) \
+	struct k_work_q name; \
+	static K_KERNEL_STACK_DEFINE(_k_work_q_stack_##name, (_stack_size)); \
+	struct k_thread _k_work_q_thread_##name; \
+	static const STRUCT_SECTION_ITERABLE(_static_work_q_data, _k_work_q_data_##name) = { \
+		.queue = &(name), \
+		.prio = (_prio), \
+		.cfg = (_cfg), \
+		.stack = _k_work_q_stack_##name, \
+		.stack_size = K_KERNEL_STACK_SIZEOF(_k_work_q_stack_##name), \
+		.thread = &_k_work_q_thread_##name, \
+	}; \
+	__maybe_unused struct k_work_q name = { \
+		.flags = K_WORK_QUEUE_INITIALIZED, \
+		.pending = SYS_SLIST_STATIC_INIT(&(name).pending), \
+		.notifyq = Z_WAIT_Q_INIT(&(name).notifyq), \
+		.drainq = Z_WAIT_Q_INIT(&(name).drainq), \
+	}
+
 /** @brief Initialize a work queue.
  *
  * This configures the work queue thread and starts it running.  The function
