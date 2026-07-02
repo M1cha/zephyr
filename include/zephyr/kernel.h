@@ -4164,6 +4164,8 @@ void k_work_queue_start(struct k_work_q *queue,
  *
  * This will run the work queue forever unless stopped by @ref k_work_queue_stop.
  *
+ * @warning Don't use the `thread` member of @p queue. Its contents are undefined.
+
  * @param queue the queue to run
  *
  * @param cfg optional additional configuration parameters.  Pass @c
