@@ -366,14 +366,16 @@ static struct mqtt_sn_gateway *mqtt_sn_gw_create(uint8_t gw_id, short duration,
 {
 	struct mqtt_sn_gateway *gw;
 
+	if (gw_addr.size > sizeof(gw->addr)) {
+		LOG_ERR("Gateway address is larger than allowed by CONFIG_MQTT_SN_LIB_MAX_ADDR_SIZE");
+		return NULL;
+	}
+
 	LOG_DBG("Free GW slots: %d", k_mem_slab_num_free_get(&gateways));
 	if (k_mem_slab_alloc(&gateways, (void **)&gw, K_NO_WAIT)) {
 		LOG_WRN("Can't create GW: no free slot");
 		return NULL;
 	}
-
-	__ASSERT(gw_addr.size <= sizeof(gw->addr),
-		 "Gateway address is larger than allowed by CONFIG_MQTT_SN_LIB_MAX_ADDR_SIZE");
 
 	memset(gw, 0, sizeof(*gw));
 	memcpy(gw->addr, gw_addr.data, gw_addr.size);
