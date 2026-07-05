@@ -301,18 +301,19 @@ int mqtt_sn_transport_udp_init(struct mqtt_sn_transport_udp *udp, struct net_soc
 		return -EINVAL;
 	}
 
-	memset(udp, 0, sizeof(*udp));
-
-	udp->tp = (struct mqtt_sn_transport){.init = tp_udp_init,
-					     .deinit = tp_udp_deinit,
-					     .sendto = tp_udp_sendto,
-					     .poll = tp_udp_poll,
-					     .recvfrom = tp_udp_recvfrom};
-
-	udp->sock = -1;
+	*udp = (struct mqtt_sn_transport_udp) {
+		.tp = {
+			.init = tp_udp_init,
+			.deinit = tp_udp_deinit,
+			.sendto = tp_udp_sendto,
+			.poll = tp_udp_poll,
+			.recvfrom = tp_udp_recvfrom,
+		},
+		.sock = -1,
+		.bcaddrlen = addrlen,
+	};
 
 	memcpy(&udp->bcaddr, bcaddr, addrlen);
-	udp->bcaddrlen = addrlen;
 
 	return 0;
 }

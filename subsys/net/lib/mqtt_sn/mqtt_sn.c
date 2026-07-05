@@ -187,7 +187,7 @@ static struct mqtt_sn_publish *mqtt_sn_publish_create(struct mqtt_sn_client *cli
 		return NULL;
 	}
 
-	memset(pub, 0, sizeof(*pub));
+	*pub = (struct mqtt_sn_publish) {0};
 
 	if (data && data->data && data->size) {
 		if (data->size > sizeof(pub->pubdata)) {
@@ -242,7 +242,7 @@ static struct mqtt_sn_topic *mqtt_sn_topic_create(struct mqtt_sn_client *client,
 		return NULL;
 	}
 
-	memset(topic, 0, sizeof(*topic));
+	*topic = (struct mqtt_sn_topic) {0};
 
 	if (!name || !name->data || !name->size) {
 		LOG_ERR("Can't create topic with empty name");
@@ -377,10 +377,12 @@ static struct mqtt_sn_gateway *mqtt_sn_gw_create(uint8_t gw_id, short duration,
 		return NULL;
 	}
 
-	memset(gw, 0, sizeof(*gw));
+	*gw = (struct mqtt_sn_gateway) {
+		.addr_len = gw_addr.size,
+		.gw_id = gw_id,
+	};
+
 	memcpy(gw->addr, gw_addr.data, gw_addr.size);
-	gw->addr_len = gw_addr.size;
-	gw->gw_id = gw_id;
 	if (duration == -1) {
 		gw->adv_timer = duration;
 	} else {
@@ -1166,12 +1168,12 @@ int mqtt_sn_client_init(struct mqtt_sn_client *client, const struct mqtt_sn_data
 		return -EINVAL;
 	}
 
-	memset(client, 0, sizeof(*client));
-
-	client->client_id.data = client_id->data;
-	client->client_id.size = client_id->size;
-	client->transport = transport;
-	client->evt_cb = evt_cb;
+	*client = (struct mqtt_sn_client) {
+		.client_id.data = client_id->data,
+		.client_id.size = client_id->size,
+		.transport = transport,
+		.evt_cb = evt_cb,
+	};
 
 	net_buf_simple_init_with_data(&client->tx, tx, txsz);
 	net_buf_simple_reset(&client->tx);
