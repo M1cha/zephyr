@@ -157,6 +157,7 @@ static void mqtt_sn_con_init(struct mqtt_sn_client *client, struct mqtt_sn_confi
 {
 	con->last_attempt = 0;
 	con->retries = N_RETRY;
+	// BUG: unlikely, but the msg_id might be in use by a qos2 message
 	con->msg_id = next_msg_id(client);
 }
 
@@ -1606,6 +1607,8 @@ static void handle_register(struct mqtt_sn_client *client, struct mqtt_sn_param_
 	struct mqtt_sn_param response = {.type = MQTT_SN_MSG_TYPE_REGACK};
 	struct mqtt_sn_topic *topic;
 
+	// BUG: check if topic exists already.
+
 	topic = mqtt_sn_topic_create(client, &p->topic);
 	if (!topic) {
 		return;
@@ -1664,6 +1667,8 @@ static void handle_publish(struct mqtt_sn_client *client, struct mqtt_sn_param_p
 		encode_and_send(client, &response, 0);
 	}
 
+	// BUG: qos2 is processed multiple times. The handler also can't dedup itself, because it
+	// has no access to the msg_id.
 	if (client->evt_cb) {
 		client->evt_cb(client, &evt);
 	}
@@ -1691,6 +1696,7 @@ static void handle_pubrec(struct mqtt_sn_client *client, struct mqtt_sn_param_pu
 		return;
 	}
 
+	// BUG: retries will send publish, instead of pubrel
 	pub->con.last_attempt = k_uptime_get();
 	pub->con.retries = N_RETRY;
 
@@ -1702,6 +1708,9 @@ static void handle_pubrec(struct mqtt_sn_client *client, struct mqtt_sn_param_pu
 static void handle_pubrel(struct mqtt_sn_client *client, struct mqtt_sn_param_pubrel *p)
 {
 	struct mqtt_sn_param response = {.type = MQTT_SN_MSG_TYPE_PUBCOMP};
+
+	// BUG: store some state, which tells us if publishes with the same msg_id should be
+	// accepted again.
 
 	response.params.pubcomp.msg_id = p->msg_id;
 
