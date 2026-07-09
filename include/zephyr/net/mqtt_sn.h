@@ -39,7 +39,6 @@ extern "C" {
 
 /**
  * Quality of Service. QoS 0-2 work the same as basic MQTT, QoS -1 is an MQTT-SN addition.
- * QOS -1 is not supported yet.
  */
 enum mqtt_sn_qos {
 	MQTT_SN_QOS_0, /**< QOS 0 */
