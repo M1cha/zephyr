@@ -796,7 +796,7 @@ static int process_pubs(struct mqtt_sn_client *client, int64_t *next_cycle)
 					return -ETIMEDOUT;
 				}
 				mqtt_sn_do_publish(client, pub, dup);
-				if (pub->qos == MQTT_SN_QOS_0 || pub->qos == MQTT_SN_QOS_M1) {
+				if (pub->qos == MQTT_SN_QOS_0) {
 					/* We are done, remove this */
 					mqtt_sn_publish_destroy(client, pub);
 					continue;
