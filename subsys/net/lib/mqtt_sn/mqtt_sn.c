@@ -1465,6 +1465,7 @@ int mqtt_sn_publish(struct mqtt_sn_client *client, enum mqtt_sn_qos qos,
 	return 0;
 }
 
+#ifdef CONFIG_MQTT_SN_LIB_GATEWAY_DISCOVERY
 static void handle_advertise(struct mqtt_sn_client *client, struct mqtt_sn_param_advertise *p,
 			     struct mqtt_sn_data rx_addr)
 {
@@ -1546,6 +1547,7 @@ static void handle_gwinfo(struct mqtt_sn_client *client, struct mqtt_sn_param_gw
 		client->evt_cb(client, &evt);
 	}
 }
+#endif
 
 static void handle_connack(struct mqtt_sn_client *client, struct mqtt_sn_param_connack *p)
 {
@@ -1824,6 +1826,7 @@ static int handle_msg(struct mqtt_sn_client *client, struct mqtt_sn_data rx_addr
 	LOG_INF("Got message of type %d", p.type);
 
 	switch (p.type) {
+#ifdef CONFIG_MQTT_SN_LIB_GATEWAY_DISCOVERY
 	case MQTT_SN_MSG_TYPE_ADVERTISE:
 		handle_advertise(client, &p.params.advertise, rx_addr);
 		break;
@@ -1833,6 +1836,7 @@ static int handle_msg(struct mqtt_sn_client *client, struct mqtt_sn_data rx_addr
 	case MQTT_SN_MSG_TYPE_GWINFO:
 		handle_gwinfo(client, &p.params.gwinfo, rx_addr);
 		break;
+#endif
 	case MQTT_SN_MSG_TYPE_CONNACK:
 		handle_connack(client, &p.params.connack);
 		break;

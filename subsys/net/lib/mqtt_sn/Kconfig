@@ -11,6 +11,10 @@ config MQTT_SN_LIB
 
 if MQTT_SN_LIB
 
+config MQTT_SN_LIB_GATEWAY_DISCOVERY
+	bool "Enable Gateway discovery"
+	default y
+
 config MQTT_SN_LIB_MAX_PAYLOAD_SIZE
 	int "Maximum payload size of an MQTT-SN message"
 	default $(UINT8_MAX)
