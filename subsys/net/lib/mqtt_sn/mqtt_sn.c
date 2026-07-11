@@ -17,11 +17,6 @@
 #include <zephyr/sys/byteorder.h>
 LOG_MODULE_REGISTER(net_mqtt_sn, CONFIG_MQTT_SN_LOG_LEVEL);
 
-#define MQTT_SN_NET_BUFS (CONFIG_MQTT_SN_LIB_MAX_PUBLISH)
-
-NET_BUF_POOL_FIXED_DEFINE(mqtt_sn_messages, MQTT_SN_NET_BUFS, CONFIG_MQTT_SN_LIB_MAX_PAYLOAD_SIZE,
-			  0, NULL);
-
 /**
  * A struct to track attempts for actions that require acknowledgment,
  * i.e. topic registering, subscribing, or unsubscribing.

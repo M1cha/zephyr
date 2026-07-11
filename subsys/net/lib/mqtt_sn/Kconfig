@@ -16,11 +16,6 @@ config MQTT_SN_LIB_MAX_PAYLOAD_SIZE
 	default $(UINT8_MAX)
 	range $(UINT8_MAX) $(UINT16_MAX)
 
-config MQTT_SN_LIB_MAX_MSGS
-	int "Number of preallocated messages"
-	default 10
-	range 1 $(UINT8_MAX)
-
 config MQTT_SN_LIB_MAX_TOPICS
 	int "Number of topics that can be managed"
 	default 20
