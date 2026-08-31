@@ -4249,6 +4249,35 @@ void k_work_queue_start(struct k_work_q *queue,
 
 #endif
 
+/** @brief Initialize a work queue.
+ *
+ * This configures the work queue thread and starts it running.  The function
+ * should not be re-invoked on a queue.
+ *
+ * @param queue pointer to the queue structure. It must be initialized
+ *        in zeroed/bss memory or with @ref k_work_queue_init before
+ *        use.
+ *
+ * @param thread pointer to an unused thread structure. A new work queue thread
+ *        will be created in it.
+ *
+ * @param stack pointer to the work thread stack area.
+ *
+ * @param stack_size size of the work thread stack area, in bytes.
+ *
+ * @param prio initial thread priority
+ *
+ * @param cfg optional additional configuration parameters.  Pass @c
+ * NULL if not required, to use the defaults documented in
+ * k_work_queue_config.
+ */
+void k_work_queue_start_with_thread(struct k_work_q *queue,
+			struct k_thread *thread,
+			k_thread_stack_t *stack,
+			size_t stack_size,
+			int prio,
+			const struct k_work_queue_config *cfg);
+
 /** @brief Run work queue using calling thread
  *
  * This will run the work queue forever unless stopped by @ref k_work_queue_stop.

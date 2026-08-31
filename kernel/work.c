@@ -895,6 +895,32 @@ void k_work_queue_start(struct k_work_q *queue,
 }
 #endif /* CONFIG_WORKQUEUE_DISABLE_BUILTIN_THREAD */
 
+void k_work_queue_start_with_thread(struct k_work_q *queue,
+			struct k_thread *thread,
+			k_thread_stack_t *stack,
+			size_t stack_size,
+			int prio,
+			const struct k_work_queue_config *cfg)
+{
+	__ASSERT_NO_MSG(queue);
+	__ASSERT_NO_MSG(thread);
+	__ASSERT_NO_MSG(stack);
+	__ASSERT_NO_MSG(queue->thread_id == NULL);
+
+	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_work_queue, start, queue);
+
+	(void)k_thread_create(thread, stack, stack_size,
+			      z_work_queue_main, queue, NULL, NULL,
+			      prio, 0, K_FOREVER);
+
+	queue->thread_id = thread;
+	apply_work_queue_config(queue, cfg);
+
+	k_thread_start(thread);
+
+	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_work_queue, start, queue);
+}
+
 int k_work_queue_drain(struct k_work_q *queue,
 		       bool plug)
 {
