@@ -86,9 +86,18 @@ static atomic_t resubmits_left;
 /* k_uptime_get32() on the last invocation of the core handler. */
 static uint32_t volatile last_handle_ms;
 
+static struct k_work_q not_init_queue;
+
+static K_THREAD_STACK_DEFINE(not_start_stack, STACK_SIZE);
+static struct k_work_q not_start_queue;
+static atomic_t not_start_ctr;
+static inline int not_start_counter(void)
+{
+	return atomic_get(&not_start_ctr);
+}
+
 static K_THREAD_STACK_DEFINE(coophi_stack, STACK_SIZE);
 static struct k_work_q coophi_queue;
-static struct k_work_q not_start_queue;
 static atomic_t coophi_ctr;
 static inline int coophi_counter(void)
 {
@@ -151,6 +160,8 @@ static void counter_handler(struct k_work *work)
 		atomic_inc(&cooplo_ctr);
 	} else if (k_current_get() == preempt_queue.thread_id) {
 		atomic_inc(&preempt_ctr);
+	} else if (k_current_get() == not_start_queue.thread_id) {
+		atomic_inc(&not_start_ctr);
 	}
 	if (atomic_dec(&resubmits_left) > 0) {
 		(void)k_work_submit_to_queue(NULL, work);
@@ -211,7 +222,19 @@ static void test_delayable_init(void)
 			  NULL);
 }
 
-/* Check that submission to an unstarted queue is diagnosed. */
+/* Check that submission to an uninitialized queue is successful. */
+ZTEST(work, test_uninitialized)
+{
+	int rc;
+
+	k_work_init(&common_work, counter_handler);
+	zassert_equal(k_work_busy_get(&common_work), 0);
+
+	rc = k_work_submit_to_queue(&not_init_queue, &common_work);
+	zassert_equal(rc, 1);
+}
+
+/* Check that submission to an unstarted queue is successful. */
 ZTEST(work, test_unstarted)
 {
 	int rc;
@@ -220,7 +243,30 @@ ZTEST(work, test_unstarted)
 	zassert_equal(k_work_busy_get(&common_work), 0);
 
 	rc = k_work_submit_to_queue(&not_start_queue, &common_work);
-	zassert_equal(rc, -ENODEV);
+	zassert_equal(rc, 1);
+	zassert_equal(k_work_busy_get(&common_work), K_WORK_QUEUED);
+	zassert_equal(k_work_is_pending(&common_work), true);
+
+	/* Shouldn't start, yet. */
+	rc = k_sem_take(&sync_sem, K_SECONDS(1));
+	zassert_equal(rc, -EAGAIN);
+	zassert_equal(not_start_counter(), 0);
+	zassert_equal(k_work_busy_get(&common_work), K_WORK_QUEUED);
+
+	k_work_queue_start(&not_start_queue, not_start_stack, STACK_SIZE, PREEMPT_PRIORITY, NULL);
+	zassert_equal(not_start_queue.flags, 0);
+
+	k_sleep(K_TICKS(1));
+	zassert_equal(not_start_counter(), 1);
+	zassert_equal(k_work_busy_get(&common_work), 0);
+
+	/* Flush the sync state from completion */
+	rc = k_sem_take(&sync_sem, K_FOREVER);
+	zassert_equal(rc, 0);
+
+	/* Make sure the queue is not-started again, in case other tests want to use it. */
+	zassert_true(k_work_queue_drain(&not_start_queue, true) >= 0, "drain failed");
+	zassert_ok(k_work_queue_stop(&not_start_queue, K_FOREVER), "stop failed");
 }
 
 static void cooplo_main(void *workq_ptr, void *p2, void *p3)
@@ -240,6 +286,8 @@ static void cooplo_main(void *workq_ptr, void *p2, void *p3)
 
 static void test_queue_start(void)
 {
+	k_work_queue_init(&not_start_queue);
+
 	struct k_work_queue_config cfg = {
 		.name = "wq.preempt",
 	};
@@ -247,7 +295,7 @@ static void test_queue_start(void)
 	zassert_equal(preempt_queue.flags, 0);
 	k_work_queue_start(&preempt_queue, preempt_stack, STACK_SIZE,
 			    PREEMPT_PRIORITY, &cfg);
-	zassert_equal(preempt_queue.flags, K_WORK_QUEUE_STARTED);
+	zassert_equal(preempt_queue.flags, 0);
 
 	if (IS_ENABLED(CONFIG_THREAD_NAME)) {
 		const char *tn = k_thread_name_get(preempt_queue.thread_id);
@@ -261,7 +309,7 @@ static void test_queue_start(void)
 	zassert_equal(invalid_test_queue.flags, 0);
 	k_work_queue_start(&invalid_test_queue, invalid_test_stack, STACK_SIZE,
 			    PREEMPT_PRIORITY, &cfg);
-	zassert_equal(invalid_test_queue.flags, K_WORK_QUEUE_STARTED);
+	zassert_equal(invalid_test_queue.flags, 0);
 
 	if (IS_ENABLED(CONFIG_THREAD_NAME)) {
 		const char *tn = k_thread_name_get(invalid_test_queue.thread_id);
@@ -276,7 +324,7 @@ static void test_queue_start(void)
 	k_work_queue_start(&coophi_queue, coophi_stack, STACK_SIZE,
 			    COOPHI_PRIORITY, &cfg);
 	zassert_equal(coophi_queue.flags,
-		      K_WORK_QUEUE_STARTED | K_WORK_QUEUE_NO_YIELD, NULL);
+		      K_WORK_QUEUE_NO_YIELD, NULL);
 
 	(void)k_thread_create(&cooplo_thread, cooplo_stack, STACK_SIZE, cooplo_main, &cooplo_queue,
 			      NULL, NULL, COOPLO_PRIORITY, 0, K_FOREVER);
@@ -287,7 +335,7 @@ static void test_queue_start(void)
 	k_msleep(1);
 
 	zassert_equal(cooplo_queue.flags,
-		      K_WORK_QUEUE_STARTED | K_WORK_QUEUE_NO_YIELD, NULL);
+		      K_WORK_QUEUE_NO_YIELD, NULL);
 }
 
 /* Check validation of submission without a destination queue. */
@@ -1070,8 +1118,7 @@ ZTEST(work_1cpu, test_1cpu_plugged_drain)
 
 	/* Queue should be plugged */
 	zassert_equal(coophi_queue.flags,
-		      K_WORK_QUEUE_STARTED
-		      | K_WORK_QUEUE_PLUGGED
+		      K_WORK_QUEUE_PLUGGED
 		      | K_WORK_QUEUE_NO_YIELD,
 		      NULL);
 
@@ -1090,7 +1137,7 @@ ZTEST(work_1cpu, test_1cpu_plugged_drain)
 	rc = k_work_queue_unplug(&coophi_queue);
 	zassert_equal(rc, -EALREADY);
 	zassert_equal(coophi_queue.flags,
-		      K_WORK_QUEUE_STARTED | K_WORK_QUEUE_NO_YIELD,
+		      K_WORK_QUEUE_NO_YIELD,
 		      NULL);
 
 	/* Resubmission should succeed and complete */
