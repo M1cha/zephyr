@@ -822,20 +822,17 @@ void k_work_queue_init(struct k_work_q *queue)
 	SYS_PORT_TRACING_OBJ_INIT(k_work_queue, queue);
 }
 
-void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *cfg)
-{
-	__ASSERT_NO_MSG(queue->thread_id == NULL);
-
-	if (!k_work_queue_is_initialized(queue)) {
-		k_work_queue_init(queue);
-	}
-
+static void apply_work_queue_config(struct k_work_q *queue, const struct k_work_queue_config *cfg) {
 	if ((cfg != NULL) && cfg->no_yield) {
 		flag_set(&queue->flags, K_WORK_QUEUE_NO_YIELD_BIT);
 	}
 
 	if ((cfg != NULL) && (cfg->name != NULL)) {
-		k_thread_name_set(_current, cfg->name);
+		k_thread_name_set(queue->thread_id, cfg->name);
+	}
+
+	if ((cfg != NULL) && (cfg->essential)) {
+		queue->thread_id->base.user_options |= K_ESSENTIAL;
 	}
 
 #if defined(CONFIG_WORKQUEUE_WORK_TIMEOUT)
@@ -845,8 +842,19 @@ void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *
 		queue->work_timeout = K_FOREVER;
 	}
 #endif /* defined(CONFIG_WORKQUEUE_WORK_TIMEOUT) */
+}
+
+void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *cfg)
+{
+	__ASSERT_NO_MSG(queue->thread_id == NULL);
+
+	if (!k_work_queue_is_initialized(queue)) {
+		k_work_queue_init(queue);
+	}
 
 	queue->thread_id = _current;
+	apply_work_queue_config(queue, cfg);
+
 	z_work_queue_main(queue, NULL, NULL);
 }
 
@@ -872,31 +880,13 @@ void k_work_queue_start(struct k_work_q *queue,
 
 	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_work_queue, start, queue);
 
-	if ((cfg != NULL) && cfg->no_yield) {
-		flag_set(&queue->flags, K_WORK_QUEUE_NO_YIELD_BIT);
-	}
-
 	(void)k_thread_create(&queue->thread, stack, stack_size,
 			      z_work_queue_main, queue, NULL, NULL,
 			      prio, 0, K_FOREVER);
 
-	if ((cfg != NULL) && (cfg->name != NULL)) {
-		k_thread_name_set(&queue->thread, cfg->name);
-	}
-
-	if ((cfg != NULL) && (cfg->essential)) {
-		queue->thread.base.user_options |= K_ESSENTIAL;
-	}
-
-#if defined(CONFIG_WORKQUEUE_WORK_TIMEOUT)
-	if ((cfg != NULL) && (cfg->work_timeout_ms)) {
-		queue->work_timeout = K_MSEC(cfg->work_timeout_ms);
-	} else {
-		queue->work_timeout = K_FOREVER;
-	}
-#endif /* defined(CONFIG_WORKQUEUE_WORK_TIMEOUT) */
-
 	queue->thread_id = &queue->thread;
+	apply_work_queue_config(queue, cfg);
+
 	k_thread_start(&queue->thread);
 
 	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_work_queue, start, queue);
