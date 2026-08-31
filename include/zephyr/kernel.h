@@ -4189,6 +4189,28 @@ int k_work_cancel(struct k_work *work);
  */
 bool k_work_cancel_sync(struct k_work *work, struct k_work_sync *sync);
 
+void z_work_queue_main(void *workq_ptr, void *p2, void *p3);
+
+#define Z_WORK_Q_INITIALIZER(name, _flags, _work_timeout, _thread_id) { \
+	.thread_id = (_thread_id), \
+	.pending   = SYS_SLIST_STATIC_INIT(&(name).pending),     \
+	.notifyq   = Z_WAIT_Q_INIT(&(name).notifyq),             \
+	.drainq    = Z_WAIT_Q_INIT(&(name).drainq),             \
+	.flags = (_flags), \
+	IF_ENABLED(CONFIG_WORKQUEUE_WORK_TIMEOUT, (.work_timeout = (_work_timeout),)) \
+}
+
+#define K_WORK_QUEUE_DEFINE(name) \
+	struct k_work_q name = Z_WORK_Q_INITIALIZER(name, 0, 0, NULL)
+
+#define K_WORK_QUEUE_DEFINE_WITH_THREAD(name, flags, work_timeout, \
+					stack_size, prio, thread_opts) \
+	struct k_work_q name; \
+	K_THREAD_DEFINE(name##_thread, stack_size,                \
+			z_work_queue_main, &name, NULL, NULL, \
+			prio, thread_opts, 0); \
+	struct k_work_q name = Z_WORK_Q_INITIALIZER(name, flags, work_timeout, &_k_thread_obj_##name##_thread)
+
 /** @brief Initialize a work queue structure.
  *
  * This must be invoked before starting a work queue structure for the first time.

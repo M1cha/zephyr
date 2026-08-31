@@ -131,6 +131,9 @@ static inline int preempt_counter(void)
 static K_THREAD_STACK_DEFINE(invalid_test_stack, STACK_SIZE);
 static struct k_work_q invalid_test_queue;
 
+K_WORK_QUEUE_DEFINE(static_queue, 0, 0);
+K_WORK_QUEUE_DEFINE_WITH_THREAD(static_queue_with_thread, 0, 0, STACK_SIZE, COOPLO_PRIORITY, K_ESSENTIAL);
+
 static atomic_t system_ctr;
 static inline int system_counter(void)
 {

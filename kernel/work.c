@@ -668,7 +668,7 @@ static void work_timeout_stop_locked(struct k_work_q *queue)
  *
  * @param workq_ptr pointer to the work queue structure
  */
-static void work_queue_main(void *workq_ptr, void *p2, void *p3)
+void z_work_queue_main(void *workq_ptr, void *p2, void *p3)
 {
 	ARG_UNUSED(p2);
 	ARG_UNUSED(p3);
@@ -847,7 +847,7 @@ void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *
 #endif /* defined(CONFIG_WORKQUEUE_WORK_TIMEOUT) */
 
 	queue->thread_id = _current;
-	work_queue_main(queue, NULL, NULL);
+	z_work_queue_main(queue, NULL, NULL);
 }
 
 void k_work_queue_start(struct k_work_q *queue,
@@ -876,7 +876,7 @@ void k_work_queue_start(struct k_work_q *queue,
 	}
 
 	(void)k_thread_create(&queue->thread, stack, stack_size,
-			      work_queue_main, queue, NULL, NULL,
+			      z_work_queue_main, queue, NULL, NULL,
 			      prio, 0, K_FOREVER);
 
 	if ((cfg != NULL) && (cfg->name != NULL)) {
