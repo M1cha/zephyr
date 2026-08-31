@@ -526,6 +526,9 @@ config WORKQUEUE_WORK_TIMEOUT
 	  execute, the work queue thread will be aborted, and an error will be
 	  logged.
 
+config WORKQUEUE_DISABLE_BUILTIN_THREAD
+	bool
+
 menu "System Work Queue Options"
 config SYSTEM_WORKQUEUE_STACK_SIZE
 	int "System workqueue stack size"

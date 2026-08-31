@@ -4222,6 +4222,8 @@ void z_work_queue_main(void *workq_ptr, void *p2, void *p3);
  */
 void k_work_queue_init(struct k_work_q *queue);
 
+#ifndef CONFIG_WORKQUEUE_DISABLE_BUILTIN_THREAD
+
 /** @brief Initialize a work queue.
  *
  * This configures the work queue thread and starts it running.  The function
@@ -4244,6 +4246,8 @@ void k_work_queue_init(struct k_work_q *queue);
 void k_work_queue_start(struct k_work_q *queue,
 			k_thread_stack_t *stack, size_t stack_size,
 			int prio, const struct k_work_queue_config *cfg);
+
+#endif
 
 /** @brief Run work queue using calling thread
  *
@@ -4888,8 +4892,10 @@ struct k_work_q {
 /**
  * @cond INTERNAL_HIDDEN
  */
+#ifndef CONFIG_WORKQUEUE_DISABLE_BUILTIN_THREAD
 	/* The thread that animates the work. */
 	__deprecated struct k_thread thread;
+#endif
 
 	/* The thread ID that animates the work. This may be an external thread
 	 * if k_work_queue_run() is used.

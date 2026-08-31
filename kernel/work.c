@@ -850,6 +850,7 @@ void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *
 	z_work_queue_main(queue, NULL, NULL);
 }
 
+#ifndef CONFIG_WORKQUEUE_DISABLE_BUILTIN_THREAD
 void k_work_queue_start(struct k_work_q *queue,
 			k_thread_stack_t *stack,
 			size_t stack_size,
@@ -902,6 +903,7 @@ void k_work_queue_start(struct k_work_q *queue,
 
 	TOOLCHAIN_ENABLE_WARNING(TOOLCHAIN_WARNING_DEPRECATED_DECLARATIONS);
 }
+#endif /* CONFIG_WORKQUEUE_DISABLE_BUILTIN_THREAD */
 
 int k_work_queue_drain(struct k_work_q *queue,
 		       bool plug)
