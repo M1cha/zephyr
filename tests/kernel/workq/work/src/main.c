@@ -90,6 +90,7 @@ static K_WORK_QUEUE_DEFINE(not_init_queue);
 
 static K_THREAD_STACK_DEFINE(not_start_stack, STACK_SIZE);
 static K_WORK_QUEUE_DEFINE(not_start_queue);
+static struct k_thread not_start_queue_thread;
 static atomic_t not_start_ctr;
 static inline int not_start_counter(void)
 {
@@ -98,6 +99,7 @@ static inline int not_start_counter(void)
 
 static K_THREAD_STACK_DEFINE(coophi_stack, STACK_SIZE);
 static K_WORK_QUEUE_DEFINE(coophi_queue);
+static struct k_thread coophi_queue_thread;
 static atomic_t coophi_ctr;
 static inline int coophi_counter(void)
 {
@@ -122,6 +124,7 @@ static inline int coop_counter(struct k_work_q *wq)
 
 static K_THREAD_STACK_DEFINE(preempt_stack, STACK_SIZE);
 static K_WORK_QUEUE_DEFINE(preempt_queue);
+static struct k_thread preempt_queue_thread;
 static atomic_t preempt_ctr;
 static inline int preempt_counter(void)
 {
@@ -130,6 +133,7 @@ static inline int preempt_counter(void)
 
 static K_THREAD_STACK_DEFINE(invalid_test_stack, STACK_SIZE);
 static K_WORK_QUEUE_DEFINE(invalid_test_queue);
+static struct k_thread invalid_test_queue_thread;
 
 K_WORK_QUEUE_DEFINE(static_queue);
 K_WORK_QUEUE_DEFINE_WITH_THREAD(static_queue_with_thread, 0, 0, STACK_SIZE, COOPLO_PRIORITY, K_ESSENTIAL);
@@ -256,7 +260,7 @@ ZTEST(work, test_unstarted)
 	zassert_equal(not_start_counter(), 0);
 	zassert_equal(k_work_busy_get(&common_work), K_WORK_QUEUED);
 
-	k_work_queue_start(&not_start_queue, not_start_stack, STACK_SIZE, PREEMPT_PRIORITY, NULL);
+	k_work_queue_start_with_thread(&not_start_queue, &not_start_queue_thread, not_start_stack, STACK_SIZE, PREEMPT_PRIORITY, NULL);
 	zassert_equal(not_start_queue.flags, 0);
 
 	k_sleep(K_TICKS(1));
@@ -293,7 +297,7 @@ static void test_queue_start(void)
 		.name = "wq.preempt",
 	};
 	zassert_equal(preempt_queue.flags, 0);
-	k_work_queue_start(&preempt_queue, preempt_stack, STACK_SIZE,
+	k_work_queue_start_with_thread(&preempt_queue, &preempt_queue_thread, preempt_stack, STACK_SIZE,
 			    PREEMPT_PRIORITY, &cfg);
 	zassert_equal(preempt_queue.flags, 0);
 
@@ -307,7 +311,7 @@ static void test_queue_start(void)
 
 	cfg.name = NULL;
 	zassert_equal(invalid_test_queue.flags, 0);
-	k_work_queue_start(&invalid_test_queue, invalid_test_stack, STACK_SIZE,
+	k_work_queue_start_with_thread(&invalid_test_queue, &invalid_test_queue_thread, invalid_test_stack, STACK_SIZE,
 			    PREEMPT_PRIORITY, &cfg);
 	zassert_equal(invalid_test_queue.flags, 0);
 
@@ -321,7 +325,7 @@ static void test_queue_start(void)
 
 	cfg.name = "wq.coophi";
 	cfg.no_yield = true;
-	k_work_queue_start(&coophi_queue, coophi_stack, STACK_SIZE,
+	k_work_queue_start_with_thread(&coophi_queue, &coophi_queue_thread, coophi_stack, STACK_SIZE,
 			    COOPHI_PRIORITY, &cfg);
 	zassert_equal(coophi_queue.flags,
 		      K_WORK_QUEUE_NO_YIELD, NULL);
@@ -1654,6 +1658,7 @@ struct ordered_work {
 
 static K_WORK_QUEUE_DEFINE(order_queue);
 static K_THREAD_STACK_DEFINE(order_stack, STACK_SIZE);
+static struct k_thread order_queue_thread;
 static struct ordered_work order_items[3];
 static int order_seq[3];
 static int order_seq_n;
@@ -1687,7 +1692,7 @@ ZTEST(work_1cpu, test_1cpu_queue_order)
 	order_seq_n = 0;
 	k_sem_init(&order_done_sem, 0, 1);
 
-	k_work_queue_start(&order_queue, order_stack, STACK_SIZE, POLICY_PRIORITY, &cfg);
+	k_work_queue_start_with_thread(&order_queue, &order_queue_thread, order_stack, STACK_SIZE, POLICY_PRIORITY, &cfg);
 
 	/* The queue is lower priority than this thread, so all three items are
 	 * queued before the queue thread runs.
@@ -1711,6 +1716,7 @@ ZTEST(work_1cpu, test_1cpu_queue_order)
 
 static K_WORK_QUEUE_DEFINE(yield_queue);
 static K_THREAD_STACK_DEFINE(yield_stack, STACK_SIZE);
+static struct k_thread yield_queue_thread;
 static struct k_thread yield_competitor;
 static K_THREAD_STACK_DEFINE(yield_comp_stack, STACK_SIZE);
 static struct k_work yield_w0, yield_w1;
@@ -1771,7 +1777,7 @@ ZTEST(work_1cpu, test_1cpu_queue_yield)
 	k_sem_init(&yield_comp_sem, 0, 1);
 	k_sem_init(&yield_done_sem, 0, 1);
 
-	k_work_queue_start(&yield_queue, yield_stack, STACK_SIZE, POLICY_PRIORITY, &cfg);
+	k_work_queue_start_with_thread(&yield_queue, &yield_queue_thread, yield_stack, STACK_SIZE, POLICY_PRIORITY, &cfg);
 
 	/* Competitor at the same priority as the queue, initially not runnable. */
 	k_thread_create(&yield_competitor, yield_comp_stack, STACK_SIZE,
