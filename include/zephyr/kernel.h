@@ -4290,6 +4290,15 @@ void k_work_queue_start_with_thread(struct k_work_q *queue,
  */
 void k_work_queue_run(struct k_work_q *queue, const struct k_work_queue_config *cfg);
 
+#ifndef CONFIG_SYSTEM_WORKQUEUE_CREATE_THREAD
+/** @brief Initialize the system work queue on the current thread.
+ *
+ * This configures the work queue and starts processing work.  The function
+ * should not be re-invoked.
+ */
+void k_sys_work_q_run_on_current_thread(void);
+#endif
+
 /** @brief Access the thread that animates a work queue.
  *
  * This is necessary to grant a work queue thread access to things the work

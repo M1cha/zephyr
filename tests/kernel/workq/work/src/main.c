@@ -1820,3 +1820,17 @@ void *workq_setup(void)
 
 ZTEST_SUITE(work_1cpu, NULL, workq_setup, ztest_simple_1cpu_before, ztest_simple_1cpu_after, NULL);
 ZTEST_SUITE(work, NULL, workq_setup, NULL, NULL, NULL);
+
+#ifdef CONFIG_SYSTEM_WORKQUEUE_USE_EXTERNAL_THREAD
+static void syswq_main(void *p1, void *p2, void *p3)
+{
+	ARG_UNUSED(p1);
+	ARG_UNUSED(p2);
+	ARG_UNUSED(p3);
+
+	k_sys_work_q_run_on_current_thread();
+}
+
+K_THREAD_DEFINE(syswq_thread, STACK_SIZE, syswq_main,
+		NULL, NULL, NULL, COOPLO_PRIORITY, 0, 0);
+#endif
