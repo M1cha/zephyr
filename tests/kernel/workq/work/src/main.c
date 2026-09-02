@@ -86,10 +86,10 @@ static atomic_t resubmits_left;
 /* k_uptime_get32() on the last invocation of the core handler. */
 static uint32_t volatile last_handle_ms;
 
-static struct k_work_q not_init_queue;
+static K_WORK_QUEUE_DEFINE(not_init_queue);
 
 static K_THREAD_STACK_DEFINE(not_start_stack, STACK_SIZE);
-static struct k_work_q not_start_queue;
+static K_WORK_QUEUE_DEFINE(not_start_queue);
 static atomic_t not_start_ctr;
 static inline int not_start_counter(void)
 {
@@ -97,7 +97,7 @@ static inline int not_start_counter(void)
 }
 
 static K_THREAD_STACK_DEFINE(coophi_stack, STACK_SIZE);
-static struct k_work_q coophi_queue;
+static K_WORK_QUEUE_DEFINE(coophi_queue);
 static atomic_t coophi_ctr;
 static inline int coophi_counter(void)
 {
@@ -106,7 +106,7 @@ static inline int coophi_counter(void)
 
 static K_THREAD_STACK_DEFINE(cooplo_stack, STACK_SIZE);
 static struct k_thread cooplo_thread;
-static struct k_work_q cooplo_queue;
+static K_WORK_QUEUE_DEFINE(cooplo_queue);
 static atomic_t cooplo_ctr;
 static inline int cooplo_counter(void)
 {
@@ -121,7 +121,7 @@ static inline int coop_counter(struct k_work_q *wq)
 }
 
 static K_THREAD_STACK_DEFINE(preempt_stack, STACK_SIZE);
-static struct k_work_q preempt_queue;
+static K_WORK_QUEUE_DEFINE(preempt_queue);
 static atomic_t preempt_ctr;
 static inline int preempt_counter(void)
 {
@@ -129,9 +129,9 @@ static inline int preempt_counter(void)
 }
 
 static K_THREAD_STACK_DEFINE(invalid_test_stack, STACK_SIZE);
-static struct k_work_q invalid_test_queue;
+static K_WORK_QUEUE_DEFINE(invalid_test_queue);
 
-K_WORK_QUEUE_DEFINE(static_queue, 0, 0);
+K_WORK_QUEUE_DEFINE(static_queue);
 K_WORK_QUEUE_DEFINE_WITH_THREAD(static_queue_with_thread, 0, 0, STACK_SIZE, COOPLO_PRIORITY, K_ESSENTIAL);
 
 static atomic_t system_ctr;
@@ -289,12 +289,9 @@ static void cooplo_main(void *workq_ptr, void *p2, void *p3)
 
 static void test_queue_start(void)
 {
-	k_work_queue_init(&not_start_queue);
-
 	struct k_work_queue_config cfg = {
 		.name = "wq.preempt",
 	};
-	k_work_queue_init(&preempt_queue);
 	zassert_equal(preempt_queue.flags, 0);
 	k_work_queue_start(&preempt_queue, preempt_stack, STACK_SIZE,
 			    PREEMPT_PRIORITY, &cfg);
@@ -1655,7 +1652,7 @@ struct ordered_work {
 	int id;
 };
 
-static struct k_work_q order_queue;
+static K_WORK_QUEUE_DEFINE(order_queue);
 static K_THREAD_STACK_DEFINE(order_stack, STACK_SIZE);
 static struct ordered_work order_items[3];
 static int order_seq[3];
@@ -1712,7 +1709,7 @@ ZTEST(work_1cpu, test_1cpu_queue_order)
 	zassert_ok(k_work_queue_stop(&order_queue, K_FOREVER), "stop failed");
 }
 
-static struct k_work_q yield_queue;
+static K_WORK_QUEUE_DEFINE(yield_queue);
 static K_THREAD_STACK_DEFINE(yield_stack, STACK_SIZE);
 static struct k_thread yield_competitor;
 static K_THREAD_STACK_DEFINE(yield_comp_stack, STACK_SIZE);
